@@ -63,7 +63,7 @@ To install the necessary dependencies, run the following command:
 This project is licensed under the ISC license.
 
 ## File Structure
-    
+```bash
 React-Express-Mysql/
 ├── dist/
 │   ├── public/
@@ -103,3 +103,4 @@ React-Express-Mysql/
 ├── webpack.dev.js
 ├── webpack.prod.js
 └── README.md
+```
