@@ -18,7 +18,7 @@ const sessionMiddleware = require('./config/sessionConfig');
 app.use(sessionMiddleware);
 
 
-const mainRoutes = require('./routes/mainRoutes');
+const mainRoutes = require('./main/mainRoutes');
 app.use('/api', mainRoutes);
 
 

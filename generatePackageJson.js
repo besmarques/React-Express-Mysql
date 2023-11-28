@@ -6,7 +6,7 @@ const currentPackageJson = JSON.parse(fs.readFileSync(path.join(__dirname, 'pack
 
 // Define the content of the new package.json
 const packageJson = {
-    name: "my-app",
+    name: "spot4all",
     version: "1.0.0",
     main: "./server.js",
     scripts: {

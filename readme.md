@@ -52,11 +52,12 @@ To install the necessary dependencies, run the following command:
 ## Scripts
 ```bash
     npm test - Run tests with Jest
-
+```
+```bash
     npm run build - Create a production build with webpack and create a package.json file with the needed dependencies
-
+```
+```bash
     npm run dev - Create a development build with webpack and run the server
-
 ```
 
 ## License
