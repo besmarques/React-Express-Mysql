@@ -22,6 +22,14 @@ const getState = ({ getStore, getActions, setStore }) => {
                     console.log("Error loading message from backend", error);
                 }
             },
+            loginUser: async (email, password) => {
+                try {
+                    const response = await axios.post("/api/login", { email, password });
+                    console.log("Logged in", response);
+                } catch (err) {
+                    console.error(err);
+                }
+            },
         },
     };
 };

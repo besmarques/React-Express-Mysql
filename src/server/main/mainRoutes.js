@@ -1,5 +1,7 @@
 const express = require("express");
 const router = express.Router();
+const logger = require("../config/logger");
+const connections = require("../config/dbpool");
 
 router.get("/main-route", (req, res) => {
     // Handle request

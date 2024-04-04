@@ -21,26 +21,8 @@ app.use(sessionMiddleware);
 const mainRoutes = require('./main/mainRoutes');
 app.use('/api', mainRoutes);
 
-
-
-app.get('/testdb', async (req, res) => {
-
-  let sqlQuery = "SELECT * FROM company";
-
-  try {
-    const teste = await connections.query(sqlQuery);
-    logger.info( sqlQuery + " completed succefully");
-    console.log(teste);
-    res.json("teste");
-  } catch (err) {
-    console.error(err);
-    //res.status(500).send('Failed to execute query');
-    res.status(500).send(err.errno + " - " + err.code + " - " + err.sqlMessage);
-    logger.error(err.errno + " - " + err.code + " - " + err.sqlMessage);
-  }
-});
-
-
+const userRoutes = require('./user/userRoutes');
+app.use('/api', userRoutes);
 
 
 // Serve static files from the "public" directory
@@ -74,4 +56,3 @@ const PORT = process.env.APP_PORT || 8080;
 app.listen(PORT, () => {
     console.log(`Server is running on port ${PORT}`);
 });
-
