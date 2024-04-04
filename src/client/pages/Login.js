@@ -11,7 +11,6 @@ const Login = () => {
 
     const handleSubmit = async (event) => {
         event.preventDefault();
-
         try {
             actions.loginUser(email, password);
         } catch (err) {

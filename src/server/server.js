@@ -7,6 +7,10 @@ const express = require('express');
 const path = require('path');
 const app = express();
 
+// Use built-in middleware for parsing JSON and URL-encoded data
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
+
 //import logger function
 const logger = require('./config/logger');
 

@@ -1,8 +1,8 @@
 import React, { useEffect, useState, useContext } from 'react';
 import { Context } from "../store/appContext";
 
-import Navbar from "../component/Navbar";
-import Footer from "../component/Footer";
+import Navbar from "../components/Navbar";
+import Footer from "../components/Footer";
 
 const NoSidebarLayout = ({ children }) => (
     <div className="container-fluid d-flex justify-content-between" style={{height:"100vh"}}>

@@ -1,9 +1,9 @@
 import React, { useEffect, useState, useContext } from 'react';
 import { Context } from "../store/appContext";
 
-import Navbar from "../component/Navbar";
-import Sidebar from "../component/Sidebar";
-import Footer from "../component/Footer";
+import Navbar from "../components/Navbar";
+import Sidebar from "../components/Sidebar";
+import Footer from "../components/Footer";
 
 const FullLayout = ({ children }) => (
     <div className="container-fluid d-flex justify-content-between" style={{height:"100vh"}}>

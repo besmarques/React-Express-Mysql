@@ -25,7 +25,10 @@ const getState = ({ getStore, getActions, setStore }) => {
             loginUser: async (email, password) => {
                 try {
                     const response = await axios.post("/api/login", { email, password });
-                    console.log("Logged in", response);
+                    console.log("Logged in 2", response);
+            
+                    // Store the token in local storage
+                    localStorage.setItem('token', response.data.token);
                 } catch (err) {
                     console.error(err);
                 }
