@@ -29,10 +29,12 @@ This project utilizes several packages to enhance development and production wor
 - [@babel/preset-react](https://babeljs.io/docs/en/babel-preset-react): Babel preset for all React plugins, for example, converts JSX and removes React.PropTypes.
 - [axios](https://www.npmjs.com/package/axios): Promise based HTTP client for the browser and node.js.
 - [babel-loader](https://webpack.js.org/loaders/babel-loader/): This package allows transpiling JavaScript files using Babel and webpack.
+- [bcrypt](https://www.npmjs.com/package/bcrypt): A library to help you hash passwords. Bcrypt is a password-hashing function designed by Niels Provos and David Mazières, based on the Blowfish cipher.
 - [dotenv](https://www.npmjs.com/package/dotenv): Dotenv is a zero-dependency module that loads environment variables from a `.env` file into `process.env`.
 - [express](https://expressjs.com/): Fast, unopinionated, minimalist web framework for Node.js.
 - [express-mysql-session](https://www.npmjs.com/package/express-mysql-session): A MySQL session store for Express.
 - [express-session](https://www.npmjs.com/package/express-session): Simple session middleware for Express.
+- [jsonwebtoken](https://www.npmjs.com/package/jsonwebtoken): An implementation of JSON Web Tokens. This is a compact, URL-safe means of representing claims to be transferred between two parties.
 - [mysql2](https://www.npmjs.com/package/mysql2): MySQL client for Node.js with focus on performance. Supports prepared statements, non-utf8 encodings, binary log protocol, compression, ssl and much more.
 - [newrelic](https://www.npmjs.com/package/newrelic): New Relic's official Node.js agent. This package instruments your application for performance monitoring with New Relic.
 - [react](https://reactjs.org/): A JavaScript library for building user interfaces.
@@ -40,6 +42,7 @@ This project utilizes several packages to enhance development and production wor
 - [react-router-dom](https://reactrouter.com/web/guides/quick-start): DOM bindings for React Router.
 - [winston](https://www.npmjs.com/package/winston): A logger for just about everything.
 - [winston-daily-rotate-file](https://www.npmjs.com/package/winston-daily-rotate-file): A transport for winston which can rotate files by day, month, or year.
+
 
 ## Installation
 
@@ -77,12 +80,18 @@ React-Express-Mysql/
 │   └── index.html
 ├── src/
 │   ├── client/
-│   │   ├── component/
+│   │   ├── components/
 │   │   │   ├── Footer.js
 │   │   │   ├── Navbar.js
+│   │   │   ├── PrivateWrapper.js
 │   │   │   └── Sidebar.js
+│   │   ├── layouts/
+│   │   │   ├── ContentOnly.js
+│   │   │   ├── FullLayout.js
+│   │   │   └── NoSidebarLayout.js
 │   │   ├── pages/
-│   │   │   └── teste.js
+│   │   │   ├── Login.js
+│   │   │   └── Teste.js
 │   │   ├── store/
 │   │   │   ├── appContext.js
 │   │   │   └── flux.js
@@ -93,8 +102,10 @@ React-Express-Mysql/
 │       │   ├── dbpool.js
 │       │   ├── logger.js
 │       │   └── sessionConfig.js
-│       ├── routes/
+│       ├── main/
 │       │   └── mainRoutes.js
+│       ├── user/
+│       │   └── userRoutes.js
 │       └── server.js
 ├── generatePackageJson.js
 ├── newrelic.js
