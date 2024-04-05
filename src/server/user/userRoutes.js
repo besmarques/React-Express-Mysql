@@ -4,6 +4,7 @@ const logger = require("../config/logger");
 const connections = require("../config/dbpool");
 const bcrypt = require("bcrypt");
 const jwt = require('jsonwebtoken');
+const secretKey = process.env.JWT_SECRET;
 
 router.get("/users", async (req, res) => {
     let sqlQuery = "SELECT * FROM user";
@@ -43,7 +44,7 @@ router.post('/login', async (req, res) => {
                 
                 //res.send('Logged in');
 
-                const token = jwt.sign({ id: user.id }, 'your-secret-key', { expiresIn: '24h' });
+                const token = jwt.sign({ id: user.id }, secretKey, { expiresIn: '24h' });
 
                 // Send the token to the client
                 res.json({ token });
