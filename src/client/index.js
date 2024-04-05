@@ -1,6 +1,8 @@
 import React from 'react';
 import ReactDOM from 'react-dom/client';
 import Layout from './layout';
+import { ThemeProvider } from '@mui/material/styles';
+import Original from './theme/original';
 
 
 
@@ -9,7 +11,9 @@ if (root !== null) {
   const appRoot = ReactDOM.createRoot(root);
   appRoot.render(
     <React.StrictMode>
-      <Layout />
+      <ThemeProvider theme={Original}>
+        <Layout />
+      </ThemeProvider>
     </React.StrictMode>
   );
 }

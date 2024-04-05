@@ -2,6 +2,8 @@ import React, { useState, useContext } from 'react';
 import { Context } from "../store/appContext";
 import { Link, useNavigate } from 'react-router-dom';
 
+import CustomButton from '../components/Button';
+
 
 function Sidebar() {
 
@@ -21,17 +23,13 @@ function Sidebar() {
     return (
         <div className="d-flex flex-column">
             this is the sidebar
-            <Link to="/">
-                <button type="button">
-                    Go to Home
-                </button>
+            <Link to="/" className="block">
+                <CustomButton variant="contained" color="primary" name="Go to Home" />
             </Link>
-            <Link to="/teste">
-                <button type="button">
-                    Go to teste
-                </button>
+            <Link to="/teste" className="block">
+                <CustomButton variant="contained" color="primary" name="Go to teste" />
             </Link>
-            <button type="button" onClick={() => handleLogout()}>Logout</button>
+            <CustomButton variant="contained" color="red" name="Logout" onClick={() => handleLogout()}/>
         </div>
     );
 }

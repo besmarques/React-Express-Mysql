@@ -34,7 +34,7 @@ router.post('/login', async (req, res) => {
 
         bcrypt.compare(password, user.password, (err, result) => {
             if (err) {
-                //logger.error(err);
+                logger.error(err);
                 return res.status(500).send('Server error');
             }
 
@@ -56,11 +56,12 @@ router.post('/login', async (req, res) => {
                 res.json({ message: 'Logged in' });
             } else {
                 // Passwords don't match
+                logger.info('401 - Incorrect password');
                 res.status(401).send('Incorrect password');
             }
         });
     } catch (err) {
-        //logger.error(err.errno + " - " + err.code + " - " + err.sqlMessage);
+        logger.error(err.errno + " - " + err.code + " - " + err.sqlMessage);
         res.status(500).send('Server error');
     }
 });
@@ -68,6 +69,7 @@ router.post('/login', async (req, res) => {
 router.post('/logout', (req, res) => {
     res.clearCookie('token');
     res.json({ message: 'Logged out' });
+    logger.info('Logged out');
 });
 
 module.exports = router;
