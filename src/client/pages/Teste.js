@@ -5,27 +5,17 @@ import { Context } from "../store/appContext";
 function Teste() {
 
     const { store, actions } = useContext(Context); 
+    const [teste, setTeste] = useState(null);
 
-    const [data, setData] = useState(null);
-    
-    useEffect(() => {
-        const fetchData = async () => {
-            try {
-                const response1 = await axios.get('/api');
-                setData(response1.data);
-            } catch (error) {
-                console.error('Error:', error);
-            }
-        };
-    
-        fetchData();
-    }, []);
+    console.log("asdasd",store.teste);
+
+  
 
     return (
         <>
             <h1>Hello React</h1>
-            <h1>{data ? `Response from API: ${data}` : 'Loading...'}</h1>
-            <h1>{store.env ? `Response from backend: ${store.env.teste}` : 'Loading...'}</h1>
+            <h1>{store.teste ? `Response from backend: ${store.teste}` : 'Loading teste...'}</h1>
+            <h2>{store.basename ? `Response from basename: ${store.basename}` : 'Loading basename...'}</h2>
         </>
         );
 }

@@ -5,14 +5,14 @@ function Sidebar() {
     return (
         <div className="d-flex flex-column">
             this is the sidebar
-            <Link to="/home">
+            <Link to="/">
                 <button type="button">
                     Go to Home
                 </button>
             </Link>
-            <Link to="/">
+            <Link to="/teste">
                 <button type="button">
-                    Go to root
+                    Go to teste
                 </button>
             </Link>
         </div>

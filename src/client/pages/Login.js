@@ -1,9 +1,13 @@
 import React, { useEffect, useState, useContext } from 'react';
 import { Context } from "../store/appContext";
+import { useNavigate } from 'react-router-dom';
+
 
 const Login = () => {
 
     const { store, actions } = useContext(Context); 
+
+    const navigate = useNavigate();
 
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
@@ -12,7 +16,9 @@ const Login = () => {
     const handleSubmit = async (event) => {
         event.preventDefault();
         try {
-            actions.loginUser(email, password);
+            await actions.loginUser(email, password);
+    
+            navigate('/');
         } catch (err) {
             setError(err.response.data);
         }

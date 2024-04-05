@@ -20,13 +20,8 @@ const Layout = () => {
         <BrowserRouter basename={basename}>
             <Routes>
                 <Route path="/login" element={ <ContentOnlyLayout> <Login /> </ContentOnlyLayout> } />
-                <Route path="/teste" element={ <NoSidebarLayout> <Teste /> </NoSidebarLayout> } />
-                <Route path="/" element={ <FullLayout> <h1>Home</h1> </FullLayout> } />
-                <Route path="/baguinho" element={
-                    <PrivateWrapper>
-                        <NoSidebarLayout><h1>Baguinho</h1></NoSidebarLayout>
-                    </PrivateWrapper>
-                } />
+                <Route path="/teste" element={ <PrivateWrapper><NoSidebarLayout> <Teste /> </NoSidebarLayout></PrivateWrapper> } />
+                <Route path="/" element={ <PrivateWrapper><FullLayout> <h1>Home</h1> </FullLayout></PrivateWrapper> } />
                 <Route element={<h1>Not found!</h1>} path="*" />
             </Routes>
         </BrowserRouter>

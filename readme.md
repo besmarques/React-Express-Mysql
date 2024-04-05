@@ -29,6 +29,7 @@ This project utilizes several packages to enhance development and production wor
 - [@babel/preset-react](https://babeljs.io/docs/en/babel-preset-react): Babel preset for all React plugins, for example, converts JSX and removes React.PropTypes.
 - [axios](https://www.npmjs.com/package/axios): Promise based HTTP client for the browser and node.js.
 - [babel-loader](https://webpack.js.org/loaders/babel-loader/): This package allows transpiling JavaScript files using Babel and webpack.
+- [cookie-parser](https://www.npmjs.com/package/cookie-parser):A middleware that parses cookies attached to the client request object. It allows you to work with cookies through req.cookies. If you pass a secret string, it can also handle signed cookies, which are available through req.signedCookies.
 - [bcrypt](https://www.npmjs.com/package/bcrypt): A library to help you hash passwords. Bcrypt is a password-hashing function designed by Niels Provos and David Mazières, based on the Blowfish cipher.
 - [dotenv](https://www.npmjs.com/package/dotenv): Dotenv is a zero-dependency module that loads environment variables from a `.env` file into `process.env`.
 - [express](https://expressjs.com/): Fast, unopinionated, minimalist web framework for Node.js.
@@ -99,6 +100,8 @@ React-Express-Mysql/
 │   │   └── layout.js
 │   └── server/
 │       ├── config/
+│       │   ├── auth.js
+│       │   ├── autoRenewToken.js
 │       │   ├── dbpool.js
 │       │   ├── logger.js
 │       │   └── sessionConfig.js

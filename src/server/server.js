@@ -21,6 +21,15 @@ const connections = require('./config/dbpool');
 const sessionMiddleware = require('./config/sessionConfig');
 app.use(sessionMiddleware);
 
+//import cookie parser
+const cookieParser = require('cookie-parser');
+app.use(cookieParser());
+
+//import troken auto renew middleware
+const autoRenewToken = require('./config/autoRenewToken');
+app.use(autoRenewToken);
+
+
 
 const mainRoutes = require('./main/mainRoutes');
 app.use('/api', mainRoutes);
@@ -36,10 +45,6 @@ app.use(express.static(path.join(__dirname, 'public')));
 app.get('/client.js', (req, res) => {
   res.sendFile(path.resolve(__dirname, 'client.js'));
 });
-
-
-
-
 
 /*
 #############################################################################################

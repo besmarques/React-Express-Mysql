@@ -44,10 +44,16 @@ router.post('/login', async (req, res) => {
                 
                 //res.send('Logged in');
 
-                const token = jwt.sign({ id: user.id }, secretKey, { expiresIn: '24h' });
+                const token = jwt.sign({ id: user.id }, secretKey, { expiresIn: '1h' });
+
+                console.log(token)
+
+                res.cookie('token', token, { secure: true, httpOnly: true, sameSite: 'strict' });
 
                 // Send the token to the client
-                res.json({ token });
+                //res.json({ token });
+
+                res.json({ message: 'Logged in' });
             } else {
                 // Passwords don't match
                 res.status(401).send('Incorrect password');
