@@ -1,5 +1,4 @@
 import axios from "axios";
-import { useHistory } from 'react-router-dom';
 const getState = ({ getStore, getActions, setStore }) => {
     return {
         store: {
@@ -37,6 +36,9 @@ const getState = ({ getStore, getActions, setStore }) => {
                 }
             },
             loginUser: async (email, password) => {
+
+                getActions().logoutUser();
+
                 try {
                     const response = await axios.post("/api/login", { email, password });
                     console.log("Logged in 2", response);
@@ -48,6 +50,13 @@ const getState = ({ getStore, getActions, setStore }) => {
                 } catch (err) {
                     console.error(err);
                     throw err; // Throw the error so it can be caught in the handleSubmit function
+                }
+            },
+            logoutUser: async () => {
+                try {
+                    await axios.post("/api/logout");
+                } catch (err) {
+                    console.error(err);
                 }
             },
         },

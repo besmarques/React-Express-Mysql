@@ -5,7 +5,7 @@ const logger = require('./logger');
 const authenticateJWT = (req, res, next) => {
     const token = req.cookies.token;
 
-    logger.info('logged in iniciated')
+    //logger.info('logged in iniciated')
 
     if (token) {
         jwt.verify(token, secretKey, (err, user) => {
@@ -16,7 +16,7 @@ const authenticateJWT = (req, res, next) => {
 
             req.user = user;
             next();
-            logger.info('logged in completed')
+            //logger.info('logged in completed')
         });
     } else {
         logger.error('401 - Unauthorized: No token provided');
