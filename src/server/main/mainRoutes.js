@@ -28,8 +28,6 @@ router.get("/env", authenticateJWT, (req, res) => {
 router.get('/auth-status', (req, res) => {
     const token = req.cookies.token;
 
-    console.log('token1', token);
-
     if (token) {
         jwt.verify(token, secretKey, (err, decoded) => {
             if (err) {

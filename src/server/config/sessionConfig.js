@@ -15,10 +15,10 @@ var sessionStore = new MySQLStore(config);
 const sessionMiddleware = session({
     secret: "secret",
     resave: false,
-    saveUninitialized: true,
+    saveUninitialized: false,
     store: sessionStore,
     cookie: {
-        maxAge: 4 * 3600000, // 4 hours
+        maxAge: 1 * 3600000, // 1 hours
     },
 });
 
