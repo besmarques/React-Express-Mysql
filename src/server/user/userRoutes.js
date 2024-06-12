@@ -53,6 +53,11 @@ router.post('/login', async (req, res) => {
 
                 res.cookie('token', token, { secure: true, httpOnly: true, sameSite: 'strict' });
 
+                console.log("req session",req.session);
+                console.log("user id",user.id);
+
+                req.session.userId = user.id;
+
                 // Send the token to the client
                 //res.json({ token });
 
@@ -173,9 +178,21 @@ router.post('/reset-password', async (req, res) => {
 
 
 router.post('/logout', (req, res) => {
-    res.clearCookie('token');
-    res.json({ message: 'Logged out' });
-    logger.info('Logged out');
+    req.session.destroy(err => {
+        if (err) {
+            // Handle error
+            logger.error('Error destroying session:', err);
+            return res.status(500).send('Server error');
+        }
+
+        // Clear cookies
+        res.clearCookie('token');
+        res.clearCookie('connect.sid');
+
+        res.json({ message: 'Logged out' });
+        logger.info('Logged out');
+    });
+
 });
 
 module.exports = router;
