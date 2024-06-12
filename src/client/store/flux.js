@@ -35,6 +35,20 @@ const getState = ({ getStore, getActions, setStore }) => {
                     console.log("Error loading message from backend", error);
                 }
             },
+            signupUser: async (email, password) => {
+                try {
+                    const response = await axios.post("/api/signup", { email, password });
+                    console.log("Signed up", response);
+            
+                    // Store the token in local storage
+                    //localStorage.setItem('token', `Bearer ${response.data.token}`);
+            
+                    return response.data;
+                } catch (err) {
+                    console.error(err);
+                    throw err; // Throw the error so it can be caught in the handleSubmit function
+                }
+            },
             loginUser: async (email, password) => {
 
                 getActions().logoutUser();

@@ -13,6 +13,7 @@ import ContentOnlyLayout from "./layouts/ContentOnly";
 //Pages
 import Teste from "./pages/Teste";
 import Login from "./pages/Login";
+import Signup from "./pages/Signup";
 
 const Layout = () => {
     const basename = /*process.env.REACT_APP_BASENAME ||*/ "";
@@ -21,6 +22,7 @@ const Layout = () => {
         <BrowserRouter basename={basename}>
             <Routes>
                 <Route path="/login" element={ <LoginWrapper><ContentOnlyLayout> <Login /> </ContentOnlyLayout></LoginWrapper> } />
+                <Route path="/signup" element={ <LoginWrapper><ContentOnlyLayout> <Signup /> </ContentOnlyLayout></LoginWrapper> } />
                 <Route path="/teste" element={ <PrivateWrapper><NoSidebarLayout> <Teste /> </NoSidebarLayout></PrivateWrapper> } />
                 <Route path="/" element={ <PrivateWrapper><FullLayout> <h1>Home</h1> </FullLayout></PrivateWrapper> } />
                 <Route element={<h1>Not found!</h1>} path="*" />

@@ -66,6 +66,36 @@ router.post('/login', async (req, res) => {
     }
 });
 
+router.post('/signup', async (req, res) => {
+    const { email, password } = req.body;
+
+    try {
+        const [users] = await connections.execute('SELECT * FROM user WHERE email = ?', [email]);
+
+        if (users.length > 0) {
+            return res.status(400).send('User with that email already exists');
+        }
+
+        bcrypt.hash(password, 10, async (err, hashedPassword) => {
+            if (err) {
+                logger.error(err);
+                return res.status(500).send('Server error');
+            }
+
+            try {
+                await connections.execute('INSERT INTO user (email, password) VALUES (?, ?)', [email, hashedPassword]);
+                res.status(201).send('User created');
+            } catch (err) {
+                logger.error(err.errno + " - " + err.code + " - " + err.sqlMessage);
+                res.status(500).send('Server error');
+            }
+        });
+    } catch (err) {
+        logger.error(err.errno + " - " + err.code + " - " + err.sqlMessage);
+        res.status(500).send('Server error');
+    }
+});
+
 router.post('/logout', (req, res) => {
     res.clearCookie('token');
     res.json({ message: 'Logged out' });
