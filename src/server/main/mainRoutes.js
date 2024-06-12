@@ -35,7 +35,10 @@ router.get('/auth-status', (req, res) => {
                 res.json({ isAuthenticated: false });
             } else {
                 // Token is valid
-                res.json({ isAuthenticated: true });
+                //res.json({ isAuthenticated: true });
+
+                const isAdmin = decoded.isAdmin;
+                res.json({ isAuthenticated: true, isAdmin });
             }
         });
     } else {

@@ -15,6 +15,7 @@ import Teste from "./pages/Teste";
 import Login from "./pages/Login";
 import Signup from "./pages/Signup";
 import ResetPassword from "./pages/ResetPassword";
+import Admin from "./pages/Admin";
 
 const Layout = () => {
     const basename = /*process.env.REACT_APP_BASENAME ||*/ "";
@@ -27,6 +28,7 @@ const Layout = () => {
                 <Route path="/reset-password/:resetToken" element={ <LoginWrapper><ContentOnlyLayout> <ResetPassword /> </ContentOnlyLayout></LoginWrapper> } />
                 <Route path="/teste" element={ <PrivateWrapper><NoSidebarLayout> <Teste /> </NoSidebarLayout></PrivateWrapper> } />
                 <Route path="/" element={ <PrivateWrapper><FullLayout> <h1>Home</h1> </FullLayout></PrivateWrapper> } />
+                <Route path="/admin" element={ <PrivateWrapper isAdminPage={true}><FullLayout> <Admin /> </FullLayout></PrivateWrapper> } />
                 <Route element={<h1>Not found!</h1>} path="*" />
             </Routes>
         </BrowserRouter>

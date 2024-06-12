@@ -59,8 +59,10 @@ const getState = ({ getStore, getActions, setStore }) => {
             
                     // Store the token in local storage
                     //localStorage.setItem('token', `Bearer ${response.data.token}`);
-            
+                    console.log('Token', response.data);
                     return response.data;
+
+                    
                 } catch (err) {
                     console.error(err);
                     throw err; // Throw the error so it can be caught in the handleSubmit function

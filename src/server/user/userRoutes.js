@@ -47,7 +47,7 @@ router.post('/login', async (req, res) => {
                 
                 //res.send('Logged in');
 
-                const token = jwt.sign({ id: user.id }, secretKey, { expiresIn: '1h' });
+                const token = jwt.sign({ id: user.id, isAdmin: user.is_admin }, secretKey, { expiresIn: '1h' });
 
                 console.log(token)
 
@@ -55,13 +55,14 @@ router.post('/login', async (req, res) => {
 
                 console.log("req session",req.session);
                 console.log("user id",user.id);
+                console.log("user admin", user.is_admin);
 
                 req.session.userId = user.id;
 
                 // Send the token to the client
                 //res.json({ token });
 
-                res.json({ message: 'Logged in' });
+                res.json({ message: 'Logged in'});
             } else {
                 // Passwords don't match
                 logger.info('401 - Incorrect password');
@@ -106,6 +107,10 @@ router.post('/signup', async (req, res) => {
 
 router.post('/forgot-password', async (req, res) => {
     const { email } = req.body;
+
+    if (email === 'hey@besmarques.eu') {
+        return res.status(400).json({ message: 'Cannot reset password for this user.' });
+    } 
 
     // Generate a random password reset token
     const resetToken = crypto.randomBytes(20).toString('hex');
@@ -184,15 +189,12 @@ router.post('/logout', (req, res) => {
             logger.error('Error destroying session:', err);
             return res.status(500).send('Server error');
         }
-
         // Clear cookies
         res.clearCookie('token');
         res.clearCookie('connect.sid');
-
         res.json({ message: 'Logged out' });
         logger.info('Logged out');
     });
-
 });
 
 module.exports = router;
