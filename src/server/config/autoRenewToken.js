@@ -3,7 +3,7 @@ const secretKey = process.env.JWT_SECRET;
 
 const autoRenewToken = (req, res, next) => {
     // Skip token renewal for the login route
-    if (!req.path.startsWith('/api')) {
+    if (!req.path.startsWith('/api') || req.path === '/api/logout') {
         return next();
     }
 

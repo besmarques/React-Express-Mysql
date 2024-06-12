@@ -1,10 +1,8 @@
 import React, { useState, useContext } from 'react';
 import { Context } from "../store/appContext";
 import { useNavigate } from 'react-router-dom';
-import axios from 'axios';
 
-
-const Login = () => {
+const Signup = () => {
 
     const { store, actions } = useContext(Context); 
 
@@ -17,7 +15,7 @@ const Login = () => {
     const handleSubmit = async (event) => {
         event.preventDefault();
         try {
-            await actions.loginUser(email, password);
+            await actions.signupUser(email, password);
     
             navigate('/');
         } catch (err) {
@@ -25,19 +23,9 @@ const Login = () => {
         }
     };
 
-    const handleForgotPassword = async () => {
-        try {
-            await axios.post('/api/forgot-password', { email });
-            alert('If an account with this email exists, a password reset link has been sent.');
-        } catch (err) {
-            console.error(err);
-        }
-    };
-
-
     return (
         <div>
-            <h1>Login</h1>
+            <h1>Signup</h1>
             <form onSubmit={handleSubmit}>
                 <label>
                     Email:
@@ -48,11 +36,10 @@ const Login = () => {
                     <input type="password" value={password} onChange={(e) => setPassword(e.target.value)} required />
                 </label>
                 {error && <p>{error}</p>}
-                <button type="submit">Login</button>
+                <button type="submit">Signup</button>
             </form>
-            <button onClick={handleForgotPassword}>Forgot Password?</button>
         </div>
     );
 }
 
-export default Login;
+export default Signup;
