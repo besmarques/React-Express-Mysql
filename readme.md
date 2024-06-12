@@ -92,6 +92,8 @@ React-Express-Mysql/
 │   │   │   └── NoSidebarLayout.js
 │   │   ├── pages/
 │   │   │   ├── Login.js
+│   │   │   ├── ResetPassword.js
+│   │   │   ├── Signup.js
 │   │   │   └── Teste.js
 │   │   ├── store/
 │   │   │   ├── appContext.js
@@ -103,6 +105,7 @@ React-Express-Mysql/
 │       │   ├── auth.js
 │       │   ├── autoRenewToken.js
 │       │   ├── dbpool.js
+│       │   ├── email.js
 │       │   ├── logger.js
 │       │   └── sessionConfig.js
 │       ├── main/

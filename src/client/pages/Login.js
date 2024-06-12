@@ -1,6 +1,7 @@
 import React, { useState, useContext } from 'react';
 import { Context } from "../store/appContext";
 import { useNavigate } from 'react-router-dom';
+import axios from 'axios';
 
 
 const Login = () => {
@@ -24,6 +25,16 @@ const Login = () => {
         }
     };
 
+    const handleForgotPassword = async () => {
+        try {
+            await axios.post('/api/forgot-password', { email });
+            alert('If an account with this email exists, a password reset link has been sent.');
+        } catch (err) {
+            console.error(err);
+        }
+    };
+
+
     return (
         <div>
             <h1>Login</h1>
@@ -39,6 +50,7 @@ const Login = () => {
                 {error && <p>{error}</p>}
                 <button type="submit">Login</button>
             </form>
+            <button onClick={handleForgotPassword}>Forgot Password?</button>
         </div>
     );
 }
