@@ -2,8 +2,10 @@ import React from "react";
 import { BrowserRouter, Route, Routes } from "react-router-dom";
 import injectContext from "./store/appContext";
 
-import PrivateWrapper from "./components/PrivateWrapper";
-import LoginWrapper from "./components/LoginWrapper";
+//Wrappers
+import PrivateWrapper from "./wrappers/PrivateWrapper";
+import LoginWrapper from "./wrappers/LoginWrapper";
+import SettingsWrapper from "./wrappers/SettingsWrapper";
 
 //Layouts
 import FullLayout from "./layouts/FullLayout";
@@ -23,8 +25,22 @@ const Layout = () => {
     return (
         <BrowserRouter basename={basename}>
             <Routes>
-                <Route path="/login" element={ <LoginWrapper><ContentOnlyLayout> <Login /> </ContentOnlyLayout></LoginWrapper> } />
-                <Route path="/signup" element={ <LoginWrapper><ContentOnlyLayout> <Signup /> </ContentOnlyLayout></LoginWrapper> } />
+                <Route path="/login" element={                 
+                    <LoginWrapper>
+                        <ContentOnlyLayout>
+                            <Login />
+                        </ContentOnlyLayout>
+                    </LoginWrapper>
+                } />
+                <Route path="/signup" element={ 
+                    <SettingsWrapper featureName="signup" redirectPath="/">
+                        <LoginWrapper>
+                            <ContentOnlyLayout>
+                                <Signup />
+                            </ContentOnlyLayout>
+                        </LoginWrapper> 
+                    </SettingsWrapper>
+                } />
                 <Route path="/reset-password/:resetToken" element={ <LoginWrapper><ContentOnlyLayout> <ResetPassword /> </ContentOnlyLayout></LoginWrapper> } />
                 <Route path="/teste" element={ <PrivateWrapper><NoSidebarLayout> <Teste /> </NoSidebarLayout></PrivateWrapper> } />
                 <Route path="/" element={ <PrivateWrapper><FullLayout> <h1>Home</h1> </FullLayout></PrivateWrapper> } />

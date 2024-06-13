@@ -84,7 +84,6 @@ React-Express-Mysql/
 │   │   ├── components/
 │   │   │   ├── Footer.js
 │   │   │   ├── Navbar.js
-│   │   │   ├── PrivateWrapper.js
 │   │   │   └── Sidebar.js
 │   │   ├── layouts/
 │   │   │   ├── ContentOnly.js
@@ -98,6 +97,10 @@ React-Express-Mysql/
 │   │   ├── store/
 │   │   │   ├── appContext.js
 │   │   │   └── flux.js
+│   │   ├── wrappers/
+│   │   │   ├── LoginWrapper.js
+│   │   │   ├── PrivateWrapper.js
+│   │   │   └── SettingsWrapper.js
 │   │   ├── index.js
 │   │   └── layout.js
 │   └── server/

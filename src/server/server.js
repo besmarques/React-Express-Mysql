@@ -25,11 +25,13 @@ app.use(sessionMiddleware);
 const cookieParser = require('cookie-parser');
 app.use(cookieParser());
 
-//import troken auto renew middleware
+//import token auto renew middleware
 const autoRenewToken = require('./config/autoRenewToken');
 app.use(autoRenewToken);
 
 
+const settingsRoutes = require('./settings/settingsRoutes');
+app.use('/api', settingsRoutes);
 
 const mainRoutes = require('./main/mainRoutes');
 app.use('/api', mainRoutes);
