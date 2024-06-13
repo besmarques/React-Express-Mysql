@@ -15,6 +15,7 @@ This project utilizes several packages to enhance development and production wor
 - [html-webpack-plugin](https://webpack.js.org/plugins/html-webpack-plugin/): A webpack plugin that simplifies creation of HTML files to serve your webpack bundles.
 - [jest](https://jestjs.io/docs/getting-started): Jest is a delightful JavaScript Testing Framework with a focus on simplicity.
 - [nodemon](https://www.npmjs.com/package/nodemon): A tool that helps develop node.js based applications by automatically restarting the node application when file changes in the directory are detected.
+- [supertest](https://www.npmjs.com/package/supertest): A library for testing HTTP servers, providing a high-level abstraction for testing HTTP.
 - [terser-webpack-plugin](https://webpack.js.org/plugins/terser-webpack-plugin/): A webpack plugin that minifies your JavaScript.
 - [webpack](https://webpack.js.org/concepts/): Webpack is a static module bundler for modern JavaScript applications.
 - [webpack-cli](https://webpack.js.org/api/cli/): Webpack's command-line interface.
@@ -27,10 +28,13 @@ This project utilizes several packages to enhance development and production wor
 - [@babel/core](https://babeljs.io/docs/en/babel-core): Babel compiler core.
 - [@babel/preset-env](https://babeljs.io/docs/en/babel-preset-env): A Babel preset that compiles ES2015+ down to ES5 by automatically determining the Babel plugins and polyfills you need based on your targeted browser or runtime environments.
 - [@babel/preset-react](https://babeljs.io/docs/en/babel-preset-react): Babel preset for all React plugins, for example, converts JSX and removes React.PropTypes.
+- [@emotion/react](https://emotion.sh/docs/@emotion/react): A library designed for writing css styles with JavaScript.
+- [@emotion/styled](https://emotion.sh/docs/styled): A library for styled components using Emotion.
+- [@mui/material](https://mui.com/): A popular React UI framework implementing Google's Material Design.
 - [axios](https://www.npmjs.com/package/axios): Promise based HTTP client for the browser and node.js.
 - [babel-loader](https://webpack.js.org/loaders/babel-loader/): This package allows transpiling JavaScript files using Babel and webpack.
-- [cookie-parser](https://www.npmjs.com/package/cookie-parser):A middleware that parses cookies attached to the client request object. It allows you to work with cookies through req.cookies. If you pass a secret string, it can also handle signed cookies, which are available through req.signedCookies.
 - [bcrypt](https://www.npmjs.com/package/bcrypt): A library to help you hash passwords. Bcrypt is a password-hashing function designed by Niels Provos and David Mazières, based on the Blowfish cipher.
+- [cookie-parser](https://www.npmjs.com/package/cookie-parser):A middleware that parses cookies attached to the client request object. It allows you to work with cookies through req.cookies. If you pass a secret string, it can also handle signed cookies, which are available through req.signedCookies.
 - [dotenv](https://www.npmjs.com/package/dotenv): Dotenv is a zero-dependency module that loads environment variables from a `.env` file into `process.env`.
 - [express](https://expressjs.com/): Fast, unopinionated, minimalist web framework for Node.js.
 - [express-mysql-session](https://www.npmjs.com/package/express-mysql-session): A MySQL session store for Express.
@@ -38,6 +42,7 @@ This project utilizes several packages to enhance development and production wor
 - [jsonwebtoken](https://www.npmjs.com/package/jsonwebtoken): An implementation of JSON Web Tokens. This is a compact, URL-safe means of representing claims to be transferred between two parties.
 - [mysql2](https://www.npmjs.com/package/mysql2): MySQL client for Node.js with focus on performance. Supports prepared statements, non-utf8 encodings, binary log protocol, compression, ssl and much more.
 - [newrelic](https://www.npmjs.com/package/newrelic): New Relic's official Node.js agent. This package instruments your application for performance monitoring with New Relic.
+- [nodemailer](https://nodemailer.com/): A module for Node.js applications to easily send emails.
 - [react](https://reactjs.org/): A JavaScript library for building user interfaces.
 - [react-dom](https://reactjs.org/docs/react-dom.html): Serves as the entry point to the DOM and server renderers for React.
 - [react-router-dom](https://reactrouter.com/web/guides/quick-start): DOM bindings for React Router.
@@ -82,6 +87,7 @@ React-Express-Mysql/
 ├── src/
 │   ├── client/
 │   │   ├── components/
+│   │   │   ├── Button.js
 │   │   │   ├── Footer.js
 │   │   │   ├── Navbar.js
 │   │   │   └── Sidebar.js
@@ -90,6 +96,7 @@ React-Express-Mysql/
 │   │   │   ├── FullLayout.js
 │   │   │   └── NoSidebarLayout.js
 │   │   ├── pages/
+│   │   │   ├── Admin.js
 │   │   │   ├── Login.js
 │   │   │   ├── ResetPassword.js
 │   │   │   ├── Signup.js
@@ -97,6 +104,8 @@ React-Express-Mysql/
 │   │   ├── store/
 │   │   │   ├── appContext.js
 │   │   │   └── flux.js
+│   │   ├── theme/
+│   │   │   └── original.js
 │   │   ├── wrappers/
 │   │   │   ├── LoginWrapper.js
 │   │   │   ├── PrivateWrapper.js
@@ -113,13 +122,17 @@ React-Express-Mysql/
 │       │   └── sessionConfig.js
 │       ├── main/
 │       │   └── mainRoutes.js
+│       ├── settings/
+│       │   └── settingsRoutes.js
 │       ├── user/
 │       │   └── userRoutes.js
 │       └── server.js
+├── tests/
+│   └── api.test.js
 ├── generatePackageJson.js
 ├── newrelic.js
-├── package.json
 ├── package-lock.json
+├── package.json
 ├── webpack.commmon.js
 ├── webpack.dev.js
 ├── webpack.prod.js
