@@ -102,8 +102,11 @@ React-Express-Mysql/
 │   │   │   ├── Signup.js
 │   │   │   └── Teste.js
 │   │   ├── store/
+│   │   │   ├── states
+│   │   │   │   ├── authState.js
+│   │   │   │   └── envState.js
 │   │   │   ├── appContext.js
-│   │   │   └── flux.js
+│   │   │   └── combinedState.js
 │   │   ├── theme/
 │   │   │   └── original.js
 │   │   ├── wrappers/
