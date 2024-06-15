@@ -6,10 +6,12 @@ const bcrypt = require("bcrypt");
 const jwt = require('jsonwebtoken');
 const secretKey = process.env.JWT_SECRET;
 const fromEmail = process.env.EMAIL_USERNAME;
+const adminEmail = process.env.ADMIN_EMAIL;
 const transporter = require('../config/email');
 const crypto = require('crypto');
+const authenticateJWT = require("../config/auth");
 
-router.get("/users", async (req, res) => {
+router.get("/users", authenticateJWT, async (req, res) => {
     let sqlQuery = "SELECT * FROM user";
 
     try {
@@ -30,7 +32,7 @@ router.post('/login', async (req, res) => {
         const [users] = await connections.execute('SELECT * FROM user WHERE email = ?', [email]);
 
         if (users.length === 0) {
-            return res.status(400).send('No user with that email');
+            return res.status(401).json('No user with that email');
         }
 
         const user = users[0];
@@ -66,7 +68,7 @@ router.post('/login', async (req, res) => {
             } else {
                 // Passwords don't match
                 logger.info('401 - Incorrect password');
-                res.status(401).send('Incorrect password');
+                res.status(401).json('Incorrect password');
             }
         });
     } catch (err) {
@@ -78,11 +80,15 @@ router.post('/login', async (req, res) => {
 router.post('/signup', async (req, res) => {
     const { email, password } = req.body;
 
+    /*if (email === 'error@test.com') {
+        throw new Error('Test error');
+    }*/
+
     try {
         const [users] = await connections.execute('SELECT * FROM user WHERE email = ?', [email]);
 
         if (users.length > 0) {
-            return res.status(400).send('User with that email already exists');
+            return res.status(400).json('User with that email already exists');
         }
 
         bcrypt.hash(password, 10, async (err, hashedPassword) => {
@@ -93,7 +99,7 @@ router.post('/signup', async (req, res) => {
 
             try {
                 await connections.execute('INSERT INTO user (email, password) VALUES (?, ?)', [email, hashedPassword]);
-                res.status(201).send('User created');
+                res.status(201).json('User created');
             } catch (err) {
                 logger.error(err.errno + " - " + err.code + " - " + err.sqlMessage);
                 res.status(500).send('Server error');
@@ -108,7 +114,7 @@ router.post('/signup', async (req, res) => {
 router.post('/forgot-password', async (req, res) => {
     const { email } = req.body;
 
-    if (email === 'hey@besmarques.eu') {
+    if (email === adminEmail) {
         return res.status(400).json({ message: 'Cannot reset password for this user.' });
     } 
 
@@ -182,7 +188,7 @@ router.post('/reset-password', async (req, res) => {
 });
 
 
-router.post('/logout', (req, res) => {
+router.post('/logout', authenticateJWT, (req, res) => {
     req.session.destroy(err => {
         if (err) {
             // Handle error

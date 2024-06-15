@@ -121,14 +121,14 @@ React-Express-Mysql/
 │       │   ├── logger.js
 │       │   └── sessionConfig.js
 │       ├── main/
-│       │   └── mainRoutes.js
+│       │   ├── mainRoutes.js
+│       │   └── mainRoutes.test.js
 │       ├── settings/
 │       │   └── settingsRoutes.js
 │       ├── user/
-│       │   └── userRoutes.js
+│       │   ├── userRoutes.js
+│       │   └── userRoutes.test.js
 │       └── server.js
-├── tests/
-│   └── api.test.js
 ├── generatePackageJson.js
 ├── newrelic.js
 ├── package-lock.json

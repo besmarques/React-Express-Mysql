@@ -45,6 +45,6 @@ router.get('/auth-status', (req, res) => {
         // No token
         res.json({ isAuthenticated: false });
     }
-  });
+});
 
 module.exports = router;
