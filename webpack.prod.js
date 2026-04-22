@@ -6,6 +6,10 @@ const TerserPlugin = require('terser-webpack-plugin');
 module.exports = common.map((config) => merge(config, {
   mode: 'production',
   optimization: {
+    splitChunks: {
+      chunks: 'all',
+      filename: 'chunks/[name].[contenthash].js',
+    },
     minimizer: [
       new TerserPlugin({
         terserOptions: {
@@ -20,5 +24,9 @@ module.exports = common.map((config) => merge(config, {
         },
       }),
     ],
+  },
+  performance: {
+    maxAssetSize: 380000,
+    maxEntrypointSize: 380000,
   },
 }));

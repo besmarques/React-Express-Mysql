@@ -26,8 +26,8 @@ function Sidebar() {
             <Link to="/" className="block">
                 <CustomButton variant="contained" color="primary" name="Go to Home" />
             </Link>
-            <Link to="/teste" className="block">
-                <CustomButton variant="contained" color="primary" name="Go to teste" />
+            <Link to="/status" className="block">
+                <CustomButton variant="contained" color="primary" name="Go to Status" />
             </Link>
             <CustomButton variant="contained" color="red" name="Logout" onClick={() => handleLogout()}/>
         </div>

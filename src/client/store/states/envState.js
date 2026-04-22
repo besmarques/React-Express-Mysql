@@ -5,16 +5,16 @@ const getEnvState = ({ getStore, getActions, setStore }) => {
         store: {
             env: null,
             basename: null,
-            teste: null,
+            statusMessage: null,
         },
         actions: {
-            getEnviromentalVariables: async () => {
+            getEnvironmentalVariables: async () => {
                 const store = getStore();
                 try {
                     const resp = await axios.get("/api/env", { withCredentials: true });
                     const data = resp.data;
                     setStore({ basename: data.REACT_APP_BASENAME });
-                    setStore({ teste: data.REACT_APP_TESTE });
+                    setStore({ statusMessage: data.REACT_APP_STATUS_MESSAGE });
                 } catch (error) {
                     console.log("Error loading message from backend", error);
                 }

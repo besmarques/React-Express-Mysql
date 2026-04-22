@@ -1,5 +1,6 @@
 const jwt = require('jsonwebtoken');
 const secretKey = process.env.JWT_SECRET;
+const { tokenCookieOptions } = require("./cookieOptions");
 
 const autoRenewToken = (req, res, next) => {
     // Skip token renewal for the login route
@@ -19,7 +20,7 @@ const autoRenewToken = (req, res, next) => {
                 if (decoded.exp < currentTime + 15 * 60) {
                     // If so, renew the token
                     const newToken = jwt.sign({ id: decoded.id, isAdmin: decoded.isAdmin }, secretKey, { expiresIn: '1h' });
-                    res.cookie('token', newToken, { secure: true, httpOnly: true, sameSite: 'strict' });
+                    res.cookie('token', newToken, tokenCookieOptions);
                 }
                 next();
             }

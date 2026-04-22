@@ -1,18 +1,7 @@
 const express = require("express");
 const router = express.Router();
+const settingsController = require("./settingsController");
 
-const parseBooleanSetting = (value, defaultValue = true) => {
-    if (value === undefined) {
-        return defaultValue;
-    }
-
-    return !["false", "0", "no", "off"].includes(value.toLowerCase());
-};
-
-router.get("/settings", (req, res) => {
-    res.json({
-        signup: parseBooleanSetting(process.env.SIGNUP_ENABLED),
-    });
-});
+router.get("/settings", settingsController.getSettings);
 
 module.exports = router;

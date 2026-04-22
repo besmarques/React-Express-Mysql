@@ -48,6 +48,9 @@ app.get('/client.js', (req, res) => {
   res.sendFile(path.resolve(__dirname, 'client.js'));
 });
 
+// Serve lazy-loaded client chunks emitted by Webpack
+app.use('/chunks', express.static(path.join(__dirname, 'chunks')));
+
 /*
 #############################################################################################
 #                                                                                           #

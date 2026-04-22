@@ -1,41 +1,20 @@
-import React, { useEffect, useState } from 'react';
+import React, { useContext } from 'react';
 import { Navigate } from 'react-router-dom';
-import axios from 'axios';
+import { Context } from "../store/appContext";
 
 const PrivateWrapper = ({ children, isAdminPage = false }) => {
-    const [isLoading, setIsLoading] = useState(true);
-    const [isLoggedIn, setIsLoggedIn] = useState(false);
-    const [isAdmin, setIsAdmin] = useState(false);
+    const { store } = useContext(Context);
 
-    useEffect(() => {
-        const checkAuthStatus = async () => {
-            try {
-                const response = await axios.get('/api/auth-status');
-                setIsLoggedIn(response.data.isAuthenticated);
-                if (response.data.isAdmin) {
-                    setIsAdmin(true);
-                }
-                console.log("teste", response.data);
-            } catch (err) {
-                console.error(err);
-            } finally {
-                setIsLoading(false);
-            }
-        };
-
-        checkAuthStatus();
-    }, []);
-
-    if (isLoading) {
-        return <div>Loading...</div>; // Or your custom loading component
+    if (store.isAuthLoading) {
+        return <div>Loading...</div>;
     }
 
-    if (!isLoggedIn) {
+    if (!store.isAuthenticated) {
         return <Navigate to="/login" />;
     }
 
-    if (isAdminPage && !isAdmin) {
-        return <Navigate to="/" />; // Redirect to home page if user is not admin
+    if (isAdminPage && !store.isAdmin) {
+        return <Navigate to="/" />;
     }
 
     return children;
