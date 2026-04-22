@@ -155,15 +155,15 @@ router.post('/reset-password', async (req, res) => {
     const { resetToken, newPassword } = req.body;
 
     // Find the user with the provided reset token
-    let user;
+    let users;
     try {
-        [user] = await connections.execute('SELECT * FROM user WHERE resetToken = ?', [resetToken]);
+        [users] = await connections.execute('SELECT * FROM user WHERE resetToken = ?', [resetToken]);
     } catch (err) {
         logger.error(err.errno + " - " + err.code + " - " + err.sqlMessage);
         return res.status(500).send('Server error');
     }
 
-    if (!user) {
+    if (users.length === 0) {
         return res.status(400).json({ message: 'Invalid reset token.' });
     }
 

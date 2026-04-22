@@ -18,8 +18,8 @@ const autoRenewToken = (req, res, next) => {
                 const currentTime = Date.now().valueOf() / 1000;
                 if (decoded.exp < currentTime + 15 * 60) {
                     // If so, renew the token
-                    const newToken = jwt.sign({ id: decoded.id }, secretKey, { expiresIn: '1h' });
-                    res.cookie('token', `Bearer ${newToken}`, { secure: true, httpOnly: true, sameSite: 'strict' });
+                    const newToken = jwt.sign({ id: decoded.id, isAdmin: decoded.isAdmin }, secretKey, { expiresIn: '1h' });
+                    res.cookie('token', newToken, { secure: true, httpOnly: true, sameSite: 'strict' });
                 }
                 next();
             }
