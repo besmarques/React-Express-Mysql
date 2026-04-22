@@ -2,6 +2,12 @@ const session = require("express-session");
 const MySQLStore = require("express-mysql-session")(session);
 require("dotenv").config();
 
+const sessionSecret = process.env.SESSION_SECRET;
+
+if (!sessionSecret) {
+    throw new Error("SESSION_SECRET environment variable is required");
+}
+
 const config = {
     host: process.env.HOST,
     port: process.env.PORT,
@@ -10,10 +16,10 @@ const config = {
     database: process.env.DATABASE,
 };
 
-var sessionStore = new MySQLStore(config);
+const sessionStore = new MySQLStore(config);
 
 const sessionMiddleware = session({
-    secret: "secret",
+    secret: sessionSecret,
     resave: false,
     saveUninitialized: false,
     store: sessionStore,

@@ -57,7 +57,7 @@ app.get('/client.js', (req, res) => {
 #############################################################################################
 */
 // All other GET requests not handled before will render our React app
-app.get('*', (req, res) => {
+app.get('/{*splat}', (req, res) => {
   res.sendFile(path.resolve(__dirname, 'public', 'index.html'));
 });
 
