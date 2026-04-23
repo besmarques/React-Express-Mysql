@@ -5,22 +5,28 @@ const logger = require('./logger');
 const authenticateJWT = (req, res, next) => {
     const token = req.cookies.token;
 
-    logger.info('logged in initiated')
-
     if (token) {
         try {
             const user = jwt.verify(token, secretKey);
-            logger.info('logged in completed');
             req.user = user;
             next();
         } catch (err) {
-            logger.error(err.name + " - " + err.message);
+            logger.warn(err.name + " - " + err.message);
             return res.status(403).send('Forbidden: Invalid or expired token');
         }
     } else {
-        logger.error('401 - Unauthorized: No token provided');
         res.status(401).send('Unauthorized: No token provided');
     }
 };
 
+const authorizeAdmin = (req, res, next) => {
+    if (!req.user || !req.user.isAdmin) {
+        logger.warn('403 - Forbidden: Admin access required');
+        return res.status(403).send('Forbidden: Admin access required');
+    }
+
+    return next();
+};
+
 module.exports = authenticateJWT;
+module.exports.authorizeAdmin = authorizeAdmin;

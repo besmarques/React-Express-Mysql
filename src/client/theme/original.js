@@ -1,7 +1,5 @@
-import { createTheme, ThemeProvider } from '@mui/material/styles';
-import CustomButton from '../components/Button';    
+import { createTheme } from '@mui/material/styles';
 
-// Create a custom theme
 const Original = createTheme({
     palette: {
         primary: {
@@ -11,7 +9,7 @@ const Original = createTheme({
             main: '#19857b',
         },
         error: {
-            main: '#red',
+            main: '#f00',
         },
         background: {
             default: '#fff',
@@ -39,4 +37,4 @@ const Original = createTheme({
     },
 });
 
-export default Original
+export default Original;

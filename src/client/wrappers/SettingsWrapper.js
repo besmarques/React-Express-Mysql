@@ -1,19 +1,36 @@
 import { useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { Navigate } from 'react-router-dom';
 
 const SettingsWrapper = ({ children, featureName, redirectPath }) => {
-  const navigate = useNavigate();
-  const [isEnabled, setIsEnabled] = useState(false);
+  const [isEnabled, setIsEnabled] = useState(null);
 
   useEffect(() => {
+    let isMounted = true;
+
     fetch('/api/settings')
       .then(response => response.json())
-      .then(data => setIsEnabled(data[featureName]));
+      .then(data => {
+        if (isMounted) {
+          setIsEnabled(Boolean(data[featureName]));
+        }
+      })
+      .catch(() => {
+        if (isMounted) {
+          setIsEnabled(false);
+        }
+      });
+
+    return () => {
+      isMounted = false;
+    };
   }, [featureName]);
 
+  if (isEnabled === null) {
+    return <div>Loading...</div>;
+  }
+
   if (!isEnabled) {
-    navigate(redirectPath);
-    return null;
+    return <Navigate to={redirectPath} />;
   }
 
   return children;

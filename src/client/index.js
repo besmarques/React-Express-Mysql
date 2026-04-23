@@ -4,8 +4,6 @@ import Layout from './layout';
 import { ThemeProvider } from '@mui/material/styles';
 import Original from './theme/original';
 
-
-
 const root = document.getElementById('root');
 if (root !== null) {
   const appRoot = ReactDOM.createRoot(root);

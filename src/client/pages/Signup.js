@@ -1,10 +1,11 @@
 import React, { useState, useContext } from 'react';
 import { Context } from "../store/appContext";
 import { useNavigate } from 'react-router-dom';
+import getApiErrorMessage from '../utils/apiErrors';
 
 const Signup = () => {
 
-    const { store, actions } = useContext(Context); 
+    const { actions } = useContext(Context); 
 
     const navigate = useNavigate();
 
@@ -19,7 +20,7 @@ const Signup = () => {
     
             navigate('/');
         } catch (err) {
-            setError(err.response.data);
+            setError(getApiErrorMessage(err, 'Unable to sign up.'));
         }
     };
 

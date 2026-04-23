@@ -1,13 +1,15 @@
 const fs = require('fs');
 const path = require('path');
+require('dotenv').config();
 
 // Read the current package.json
 const currentPackageJson = JSON.parse(fs.readFileSync(path.join(__dirname, 'package.json')));
+const packageName = process.env.DIST_PACKAGE_NAME || currentPackageJson.name;
 
 // Define the content of the new package.json
 const packageJson = {
-    name: "spot4all",
-    version: "1.0.0",
+    name: packageName,
+    version: currentPackageJson.version,
     main: "./server.js",
     scripts: {
         start: "node ./server.js"

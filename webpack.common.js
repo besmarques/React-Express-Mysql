@@ -7,10 +7,14 @@ const nodeExternals = require("webpack-node-externals");
 module.exports = [
     {
         name: "client",
-        entry: "./src/client/index.js",
+        entry: {
+            client: "./src/client/index.js",
+        },
         output: {
             path: path.resolve(__dirname, "dist"),
-            filename: "client.js",
+            filename: "[name].js",
+            chunkFilename: "chunks/[name].[contenthash].js",
+            publicPath: "/",
         },
         module: {
             rules: [
@@ -21,7 +25,11 @@ module.exports = [
                         loader: "babel-loader",
                         options: {
                             presets: [
-                                "@babel/preset-env",
+                                ["@babel/preset-env", {
+                                    targets: {
+                                        esmodules: true,
+                                    },
+                                }],
                                 "@babel/preset-react",
                             ],
                         },
@@ -69,7 +77,11 @@ module.exports = [
                         loader: "babel-loader",
                         options: {
                             presets: [
-                                "@babel/preset-env",
+                                ["@babel/preset-env", {
+                                    targets: {
+                                        node: "18",
+                                    },
+                                }],
                                 "@babel/preset-react",
                             ],
                         },

@@ -4,140 +4,201 @@
 
 This project is a full-stack JavaScript application built with React for the front-end and Express.js for the back-end. It uses MySQL for database management and Axios for handling HTTP requests. The application is bundled and transpiled using Webpack and Babel, respectively. Jest is used for testing, and dotenv is used for managing environment variables. The project also utilizes several other packages to enhance development and production workflows.
 
+## Visual Architecture
 
-# Project Dependencies
+Architecture diagrams, module maps, and key sequence flows are documented with Mermaid in [docs/architecture.md](docs/architecture.md).
+
+## Project Dependencies
 
 This project utilizes several packages to enhance development and production workflows.
 
 ## DevDependencies
 
-- [copy-webpack-plugin](https://www.npmjs.com/package/copy-webpack-plugin): A webpack plugin to copy individual files or entire directories to the build directory.
-- [html-webpack-plugin](https://webpack.js.org/plugins/html-webpack-plugin/): A webpack plugin that simplifies creation of HTML files to serve your webpack bundles.
-- [jest](https://jestjs.io/docs/getting-started): Jest is a delightful JavaScript Testing Framework with a focus on simplicity.
-- [nodemon](https://www.npmjs.com/package/nodemon): A tool that helps develop node.js based applications by automatically restarting the node application when file changes in the directory are detected.
-- [supertest](https://www.npmjs.com/package/supertest): A library for testing HTTP servers, providing a high-level abstraction for testing HTTP.
-- [terser-webpack-plugin](https://webpack.js.org/plugins/terser-webpack-plugin/): A webpack plugin that minifies your JavaScript.
-- [webpack](https://webpack.js.org/concepts/): Webpack is a static module bundler for modern JavaScript applications.
-- [webpack-cli](https://webpack.js.org/api/cli/): Webpack's command-line interface.
-- [webpack-dev-server](https://webpack.js.org/configuration/dev-server/): Serves a webpack app and updates the browser on changes.
-- [webpack-merge](https://webpack.js.org/loaders/merge/): A webpack plugin to merge configuration objects.
-- [webpack-node-externals](https://www.npmjs.com/package/webpack-node-externals): A small webpack plugin to exclude all modules in the node_modules directory from the bundled file.
+- [copy-webpack-plugin](https://www.npmjs.com/package/copy-webpack-plugin) `^14.0.0`: Copies public assets into the Webpack build output.
+- [html-webpack-plugin](https://webpack.js.org/plugins/html-webpack-plugin/) `^5.6.7`: Generates the HTML file that loads the client bundle.
+- [jest](https://jestjs.io/docs/getting-started) `^30.3.0`: JavaScript test runner.
+- [nodemon](https://www.npmjs.com/package/nodemon) `^3.1.14`: Restarts the development server when files change.
+- [supertest](https://www.npmjs.com/package/supertest) `^7.2.2`: Tests Express routes through an in-memory HTTP interface.
+- [terser-webpack-plugin](https://webpack.js.org/plugins/terser-webpack-plugin/) `^5.4.0`: Minifies production JavaScript bundles.
+- [webpack](https://webpack.js.org/concepts/) `^5.106.2`: Bundles the client and server builds.
+- [webpack-cli](https://webpack.js.org/api/cli/) `^7.0.2`: Command-line interface for Webpack.
+- [webpack-dev-server](https://webpack.js.org/configuration/dev-server/) `^5.2.3`: Development server tooling for Webpack.
+- [webpack-merge](https://webpack.js.org/loaders/merge/) `^6.0.1`: Merges common, development, and production Webpack configuration.
+- [webpack-node-externals](https://www.npmjs.com/package/webpack-node-externals) `^3.0.0`: Excludes `node_modules` from the server bundle.
 
 ## Dependencies
 
-- [@babel/core](https://babeljs.io/docs/en/babel-core): Babel compiler core.
-- [@babel/preset-env](https://babeljs.io/docs/en/babel-preset-env): A Babel preset that compiles ES2015+ down to ES5 by automatically determining the Babel plugins and polyfills you need based on your targeted browser or runtime environments.
-- [@babel/preset-react](https://babeljs.io/docs/en/babel-preset-react): Babel preset for all React plugins, for example, converts JSX and removes React.PropTypes.
-- [@emotion/react](https://emotion.sh/docs/@emotion/react): A library designed for writing css styles with JavaScript.
-- [@emotion/styled](https://emotion.sh/docs/styled): A library for styled components using Emotion.
-- [@mui/material](https://mui.com/): A popular React UI framework implementing Google's Material Design.
-- [axios](https://www.npmjs.com/package/axios): Promise based HTTP client for the browser and node.js.
-- [babel-loader](https://webpack.js.org/loaders/babel-loader/): This package allows transpiling JavaScript files using Babel and webpack.
-- [bcrypt](https://www.npmjs.com/package/bcrypt): A library to help you hash passwords. Bcrypt is a password-hashing function designed by Niels Provos and David Mazières, based on the Blowfish cipher.
-- [cookie-parser](https://www.npmjs.com/package/cookie-parser):A middleware that parses cookies attached to the client request object. It allows you to work with cookies through req.cookies. If you pass a secret string, it can also handle signed cookies, which are available through req.signedCookies.
-- [dotenv](https://www.npmjs.com/package/dotenv): Dotenv is a zero-dependency module that loads environment variables from a `.env` file into `process.env`.
-- [express](https://expressjs.com/): Fast, unopinionated, minimalist web framework for Node.js.
-- [express-mysql-session](https://www.npmjs.com/package/express-mysql-session): A MySQL session store for Express.
-- [express-session](https://www.npmjs.com/package/express-session): Simple session middleware for Express.
-- [jsonwebtoken](https://www.npmjs.com/package/jsonwebtoken): An implementation of JSON Web Tokens. This is a compact, URL-safe means of representing claims to be transferred between two parties.
-- [mysql2](https://www.npmjs.com/package/mysql2): MySQL client for Node.js with focus on performance. Supports prepared statements, non-utf8 encodings, binary log protocol, compression, ssl and much more.
-- [newrelic](https://www.npmjs.com/package/newrelic): New Relic's official Node.js agent. This package instruments your application for performance monitoring with New Relic.
-- [nodemailer](https://nodemailer.com/): A module for Node.js applications to easily send emails.
-- [react](https://reactjs.org/): A JavaScript library for building user interfaces.
-- [react-dom](https://reactjs.org/docs/react-dom.html): Serves as the entry point to the DOM and server renderers for React.
-- [react-router-dom](https://reactrouter.com/web/guides/quick-start): DOM bindings for React Router.
-- [winston](https://www.npmjs.com/package/winston): A logger for just about everything.
-- [winston-daily-rotate-file](https://www.npmjs.com/package/winston-daily-rotate-file): A transport for winston which can rotate files by day, month, or year.
-
+- [@babel/core](https://babeljs.io/docs/en/babel-core) `^7.29.0`: Babel compiler core.
+- [@babel/preset-env](https://babeljs.io/docs/en/babel-preset-env) `^7.29.2`: Babel preset for JavaScript target environments.
+- [@babel/preset-react](https://babeljs.io/docs/en/babel-preset-react) `^7.28.5`: Babel preset for React JSX.
+- [@emotion/react](https://emotion.sh/docs/@emotion/react) `^11.14.0`: CSS-in-JS support used by MUI.
+- [@emotion/styled](https://emotion.sh/docs/styled) `^11.14.1`: Styled component support used by MUI.
+- [@mui/material](https://mui.com/) `^9.0.0`: React UI framework implementing Material Design.
+- [axios](https://www.npmjs.com/package/axios) `^1.15.2`: Promise-based HTTP client for browser and Node.js.
+- [babel-loader](https://webpack.js.org/loaders/babel-loader/) `^10.1.1`: Webpack loader for Babel.
+- [bcrypt](https://www.npmjs.com/package/bcrypt) `^6.0.0`: Password hashing library.
+- [cookie-parser](https://www.npmjs.com/package/cookie-parser) `^1.4.7`: Express middleware for parsing cookies.
+- [dotenv](https://www.npmjs.com/package/dotenv) `^17.4.2`: Loads environment variables from `.env`.
+- [express](https://expressjs.com/) `^5.2.1`: Web framework for Node.js.
+- [express-mysql-session](https://www.npmjs.com/package/express-mysql-session) `^3.0.3`: MySQL-backed session store for Express.
+- [express-session](https://www.npmjs.com/package/express-session) `^1.19.0`: Session middleware for Express.
+- [jsonwebtoken](https://www.npmjs.com/package/jsonwebtoken) `^9.0.3`: JSON Web Token implementation.
+- [mysql2](https://www.npmjs.com/package/mysql2) `^3.22.2`: MySQL client for Node.js.
+- [newrelic](https://www.npmjs.com/package/newrelic) `^13.19.2`: New Relic Node.js agent.
+- [nodemailer](https://nodemailer.com/) `^8.0.5`: Email sending library for Node.js.
+- [react](https://reactjs.org/) `^19.2.5`: JavaScript library for building user interfaces.
+- [react-dom](https://reactjs.org/docs/react-dom.html) `^19.2.5`: React DOM renderer.
+- [react-router-dom](https://reactrouter.com/) `^7.14.2`: DOM bindings for React Router.
+- [winston](https://www.npmjs.com/package/winston) `^3.19.0`: Logging library.
+- [winston-daily-rotate-file](https://www.npmjs.com/package/winston-daily-rotate-file) `^5.0.0`: File rotation transport for Winston.
 
 ## Installation
 
-To install the necessary dependencies, run the following command:
+To install the necessary dependencies, run:
 
 ```bash
-    npm install
+npm install
 ```
 
 ## Scripts
+
 ```bash
-    npm test - Run tests with Jest
-```
-```bash
-    npm run build - Create a production build with webpack and create a package.json file with the needed dependencies
-```
-```bash
-    npm run dev - Create a development build with webpack and run the server
+npm test
 ```
 
+Runs tests with Jest.
+
+```bash
+npm run build
+```
+
+Creates a production build with Webpack and writes the deployable `dist/package.json`.
+
+```bash
+npm run dev
+```
+
+Creates a development build with Webpack and runs the server through Nodemon.
+
+## Generated Output Policy
+
+The `dist/` directory is generated by Webpack when you run `npm run build`. It contains the deployable server bundle, client assets, copied public files, lazy-loaded chunks, and the generated production `package.json`.
+
+Do not commit `dist/` to source control. It is already ignored in `.gitignore`, and deployments should create or upload it from a fresh `npm run build`.
+
+## Database Schema
+
+The `db/schema/` directory contains the SQL files for creating the application tables in a fresh database.
+
+Optional seed examples live in `db/seed/`. Review and replace placeholder values before running them.
+
+## Environment
+
+Startup requires `APP_PUBLIC_URL`, `JWT_SECRET`, `SESSION_SECRET`, `DB_HOST`, `DB_PORT`, `DB_USER`, and `DB_NAME`. `DB_PASSWORD` and email settings are optional at startup; missing optional values are logged as warnings and related features may be unavailable until configured.
+
 ## License
+
 This project is licensed under the ISC license.
 
 ## File Structure
+
 ```bash
 React-Express-Mysql/
-├── dist/
-│   ├── public/
-│   │   └── index.html
-│   ├── client.js
-│   ├── client.js.LICENSE.txt
-│   ├── server.js
-│   └── package.json
-├── public/
-│   └── index.html
-├── src/
-│   ├── client/
-│   │   ├── components/
-│   │   │   ├── Button.js
-│   │   │   ├── Footer.js
-│   │   │   ├── Navbar.js
-│   │   │   └── Sidebar.js
-│   │   ├── layouts/
-│   │   │   ├── ContentOnly.js
-│   │   │   ├── FullLayout.js
-│   │   │   └── NoSidebarLayout.js
-│   │   ├── pages/
-│   │   │   ├── Admin.js
-│   │   │   ├── Login.js
-│   │   │   ├── ResetPassword.js
-│   │   │   ├── Signup.js
-│   │   │   └── Teste.js
-│   │   ├── store/
-│   │   │   ├── states
-│   │   │   │   ├── authState.js
-│   │   │   │   └── envState.js
-│   │   │   ├── appContext.js
-│   │   │   └── combinedState.js
-│   │   ├── theme/
-│   │   │   └── original.js
-│   │   ├── wrappers/
-│   │   │   ├── LoginWrapper.js
-│   │   │   ├── PrivateWrapper.js
-│   │   │   └── SettingsWrapper.js
-│   │   ├── index.js
-│   │   └── layout.js
-│   └── server/
-│       ├── config/
-│       │   ├── auth.js
-│       │   ├── autoRenewToken.js
-│       │   ├── dbpool.js
-│       │   ├── email.js
-│       │   ├── logger.js
-│       │   └── sessionConfig.js
-│       ├── main/
-│       │   ├── mainRoutes.js
-│       │   └── mainRoutes.test.js
-│       ├── settings/
-│       │   └── settingsRoutes.js
-│       ├── user/
-│       │   ├── userRoutes.js
-│       │   └── userRoutes.test.js
-│       └── server.js
-├── generatePackageJson.js
-├── newrelic.js
-├── package-lock.json
-├── package.json
-├── webpack.commmon.js
-├── webpack.dev.js
-├── webpack.prod.js
-└── README.md
+|-- db/
+|   |-- schema/
+|   |   |-- sessions.sql
+|   |   `-- user.sql
+|   `-- seed/
+|       `-- admin.example.sql
+|-- docs/
+|   `-- architecture.md
+|-- dist/                       # Generated by npm run build; do not commit
+|   |-- chunks/
+|   |-- public/
+|   |   |-- index.html
+|   |   `-- status/
+|   |       `-- .gitkeep
+|   |-- client.js
+|   |-- package.json
+|   `-- server.js
+|-- public/
+|   |-- index.html
+|   `-- status/
+|       `-- .gitkeep
+|-- src/
+|   |-- client/
+|   |   |-- components/
+|   |   |   |-- Button.js
+|   |   |   |-- Footer.js
+|   |   |   |-- Navbar.js
+|   |   |   `-- Sidebar.js
+|   |   |-- layouts/
+|   |   |   |-- ContentOnly.js
+|   |   |   |-- FullLayout.js
+|   |   |   `-- NoSidebarLayout.js
+|   |   |-- pages/
+|   |   |   |-- Admin.js
+|   |   |   |-- Login.js
+|   |   |   |-- ResetPassword.js
+|   |   |   |-- Signup.js
+|   |   |   `-- Status.js
+|   |   |-- store/
+|   |   |   |-- states/
+|   |   |   |   |-- authState.js
+|   |   |   |   `-- envState.js
+|   |   |   |-- appContext.js
+|   |   |   `-- combinedState.js
+|   |   |-- theme/
+|   |   |   `-- original.js
+|   |   |-- wrappers/
+|   |   |   |-- LoginWrapper.js
+|   |   |   |-- PrivateWrapper.js
+|   |   |   `-- SettingsWrapper.js
+|   |   |-- utils/
+|   |   |   `-- apiErrors.js
+|   |   |-- index.js
+|   |   `-- layout.js
+|   `-- server/
+|       |-- config/
+|       |   |-- auth.js
+|       |   |-- autoRenewToken.js
+|       |   |-- autoRenewToken.test.js
+|       |   |-- cookieOptions.js
+|       |   |-- dbpool.js
+|       |   |-- email.js
+|       |   |-- email.test.js
+|       |   |-- logger.js
+|       |   |-- sessionConfig.js
+|       |   |-- validateEnv.js
+|       |   `-- validateEnv.test.js
+|       |-- main/
+|       |   |-- mainController.js
+|       |   |-- mainRoutes.js
+|       |   |-- mainRoutes.test.js
+|       |   `-- mainService.js
+|       |-- settings/
+|       |   |-- settingsController.js
+|       |   |-- settingsRoutes.js
+|       |   `-- settingsService.js
+|       |-- user/
+|       |   |-- userController.js
+|       |   |-- userRepository.js
+|       |   |-- userRepository.test.js
+|       |   |-- userRoutes.js
+|       |   |-- userRoutes.test.js
+|       |   |-- userService.js
+|       |   |-- userService.test.js
+|       |   `-- userValidation.js
+|       |-- app.js
+|       `-- server.js
+|-- env.example
+|-- generatePackageJson.js
+|-- issues-to-solve.txt
+|-- newrelic.js
+|-- package-lock.json
+|-- package.json
+|-- readme.md
+|-- webpack.common.js
+|-- webpack.dev.js
+`-- webpack.prod.js
 ```

@@ -1,22 +1,15 @@
-import React, { useEffect, useState, useContext } from 'react';
-import { Context } from "../store/appContext";
+import React from 'react';
 
 import Navbar from "../components/Navbar";
 import Footer from "../components/Footer";
 
 const NoSidebarLayout = ({ children }) => (
-    <div className="container-fluid d-flex justify-content-between" style={{height:"100vh"}}>
-        <div className="col-12">
-            <Navbar />
-            <div className="row" style={{height:"90vh"}}>
-                <main>
-                    {children}
-                </main>
-            </div>
-            <div className="row" style={{height:"5vh"}}>
-                <Footer />
-            </div>
-        </div>
+    <div className="container-fluid d-flex flex-column p-0" style={{ height: "100vh", maxHeight: "100vh", overflow: "hidden" }}>
+        <Navbar />
+        <main className="flex-grow-1 overflow-auto" style={{ minHeight: 0 }}>
+            {children}
+        </main>
+        <Footer />
     </div>
 );
 export default NoSidebarLayout;

@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import axios from 'axios';
+import getApiErrorMessage from '../utils/apiErrors';
 
 const ResetPassword = () => {
     const navigate = useNavigate();
@@ -23,7 +24,7 @@ const ResetPassword = () => {
             alert('Password has been reset. You can now log in with your new password.');
             navigate('/login');
         } catch (err) {
-            setError(err.response.data);
+            setError(getApiErrorMessage(err, 'Unable to reset password.'));
         }
     };
 
