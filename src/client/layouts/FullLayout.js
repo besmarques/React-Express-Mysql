@@ -5,20 +5,19 @@ import Sidebar from "../components/Sidebar";
 import Footer from "../components/Footer";
 
 const FullLayout = ({ children }) => (
-    <div className="container-fluid d-flex justify-content-between" style={{height:"100vh"}}>
-        <div className="col-2">
+    <div className="container-fluid d-flex p-0" style={{ height: "100vh", maxHeight: "100vh", overflow: "hidden" }}>
+        <aside
+            className="h-100 overflow-auto border-end p-1"
+            style={{ width: "clamp(160px, 14vw, 220px)", flexShrink: 0 }}
+        >
             <Sidebar />
-        </div>
-        <div className="col-10">
+        </aside>
+        <div className="d-flex flex-column h-100 overflow-hidden flex-grow-1">
             <Navbar />
-            <div className="row" style={{height:"90vh"}}>
-                <main>
-                    {children}
-                </main>
-            </div>
-            <div className="row" style={{height:"5vh"}}>
-                <Footer />
-            </div>
+            <main className="flex-grow-1 overflow-auto p-1" style={{ minHeight: 0 }}>
+                {children}
+            </main>
+            <Footer />
         </div>
     </div>
 );

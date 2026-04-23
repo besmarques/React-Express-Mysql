@@ -17,10 +17,8 @@ const ResetPassword = lazy(() => import("./pages/ResetPassword"));
 const Admin = lazy(() => import("./pages/Admin"));
 
 const Layout = () => {
-    const basename = process.env.REACT_APP_BASENAME || "";
-
     return (
-        <BrowserRouter basename={basename}>
+        <BrowserRouter>
             <Suspense fallback={<div>Loading...</div>}>
                 <Routes>
                     <Route path="/login" element={
@@ -40,7 +38,7 @@ const Layout = () => {
                         </SettingsWrapper>
                     } />
                     <Route path="/reset-password/:resetToken" element={<LoginWrapper><ContentOnlyLayout> <ResetPassword /> </ContentOnlyLayout></LoginWrapper>} />
-                    <Route path="/status" element={<PrivateWrapper><NoSidebarLayout> <Status /> </NoSidebarLayout></PrivateWrapper>} />
+                    <Route path="/status" element={<PrivateWrapper><FullLayout> <Status /> </FullLayout></PrivateWrapper>} />
                     <Route path="/" element={<PrivateWrapper><FullLayout> <h1>Home</h1> </FullLayout></PrivateWrapper>} />
                     <Route path="/admin" element={<PrivateWrapper isAdminPage={true}><FullLayout> <Admin /> </FullLayout></PrivateWrapper>} />
                     <Route element={<h1>Not found!</h1>} path="*" />

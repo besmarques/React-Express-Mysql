@@ -50,17 +50,11 @@ beforeEach(() => {
     });
 });
 
-describe("GET /api/", () => {
-    it("should return 401 Unauthorized if no authentication is provided", async () => {
-        const res = await request(app).get("/api/");
-        expect(res.statusCode).toEqual(401);
-    });
-
-    it("should return 200 OK if a valid token is provided", async () => {
-        const token = jwt.sign({ isAdmin: true });
-        const res = await request(app).get("/api/").set("Cookie", `token=${token}`);
+describe("GET /api/health", () => {
+    it("should return 200 OK without authentication", async () => {
+        const res = await request(app).get("/api/health");
         expect(res.statusCode).toEqual(200);
-        expect(res.text).toEqual("Hello World !!!!!");
+        expect(res.body).toEqual({ status: "ok" });
     });
 });
 

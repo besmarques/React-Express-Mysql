@@ -21,7 +21,7 @@ jest.mock("./userRepository", () => ({
 }));
 
 const crypto = require("crypto");
-const transporter = require("../config/email");
+const emailService = require("../config/email");
 const userRepository = require("./userRepository");
 const userService = require("./userService");
 
@@ -41,7 +41,7 @@ describe("userService password reset", () => {
         await userService.sendPasswordReset("user@example.com");
 
         const saveCall = userRepository.saveResetToken.mock.calls[0];
-        const mailOptions = transporter.sendMail.mock.calls[0][0];
+        const mailOptions = emailService.sendMail.mock.calls[0][0];
         const rawToken = mailOptions.text.match(/reset-password\/([a-f0-9]+)/)[1];
 
         expect(saveCall[0]).toEqual("user@example.com");
@@ -58,7 +58,7 @@ describe("userService password reset", () => {
 
         await userService.sendPasswordReset("missing@example.com");
 
-        expect(transporter.sendMail).not.toHaveBeenCalled();
+        expect(emailService.sendMail).not.toHaveBeenCalled();
     });
 
     it("hashes the submitted reset token before lookup and update", async () => {

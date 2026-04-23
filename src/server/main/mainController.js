@@ -1,11 +1,7 @@
 const mainService = require("./mainService");
 
-const getMainRoute = (req, res) => {
-    res.send("this is the main route");
-};
-
-const getRoot = (req, res) => {
-    res.send("Hello World !!!!!");
+const getHealth = (req, res) => {
+    res.json({ status: "ok" });
 };
 
 const getEnv = (req, res) => {
@@ -19,6 +15,5 @@ const getAuthStatus = (req, res) => {
 module.exports = {
     getAuthStatus,
     getEnv,
-    getMainRoute,
-    getRoot,
+    getHealth,
 };

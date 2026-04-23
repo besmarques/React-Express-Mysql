@@ -42,10 +42,6 @@ const login = async (req, res) => {
 
         return res.json({ message: "Logged in" });
     } catch (err) {
-        if (err.statusCode === 401 && err.responseBody === "Incorrect password") {
-            logger.info("401 - Incorrect password");
-        }
-
         return sendError(res, err);
     }
 };

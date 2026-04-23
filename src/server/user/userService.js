@@ -1,7 +1,7 @@
 const bcrypt = require("bcrypt");
 const crypto = require("crypto");
 const jwt = require("jsonwebtoken");
-const transporter = require("../config/email");
+const emailService = require("../config/email");
 const userRepository = require("./userRepository");
 
 const secretKey = process.env.JWT_SECRET;
@@ -80,7 +80,7 @@ const sendPasswordReset = async (email) => {
         text: `You are receiving this because you (or someone else) have requested the reset of the password for your account.\n\nPlease click on the following link, or paste this into your browser to complete the process within one hour of receiving it:\n\n${getResetPasswordUrl(resetToken)}\n\nIf you did not request this, please ignore this email and your password will remain unchanged.\n`,
     };
 
-    await transporter.sendMail(mailOptions);
+    await emailService.sendMail(mailOptions);
 };
 
 const resetPassword = async (resetToken, newPassword) => {

@@ -21,8 +21,7 @@ function Sidebar() {
     };
 
     return (
-        <div className="d-flex flex-column">
-            this is the sidebar
+        <nav className="d-flex flex-column">
             <Link to="/" className="block">
                 <CustomButton variant="contained" color="primary" name="Go to Home" />
             </Link>
@@ -30,7 +29,7 @@ function Sidebar() {
                 <CustomButton variant="contained" color="primary" name="Go to Status" />
             </Link>
             <CustomButton variant="contained" color="red" name="Logout" onClick={() => handleLogout()}/>
-        </div>
+        </nav>
     );
 }
 
