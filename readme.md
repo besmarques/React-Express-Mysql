@@ -8,6 +8,101 @@ This project is a full-stack JavaScript application built with React for the fro
 
 Architecture diagrams, module maps, and key sequence flows are documented with Mermaid in [docs/architecture.md](docs/architecture.md).
 
+## Optional CMS Plan
+
+A step-by-step plan for evolving this boilerplate into an optional WordPress-like CMS is documented in [docs/cms-plan.md](docs/cms-plan.md).
+
+## Optional CMS Module
+
+CMS support is disabled by default. Set `CMS_ENABLED=true` to register CMS API routes.
+
+Phase 1 adds the CMS module boundary and a health endpoint:
+
+```bash
+GET /api/cms/health
+```
+
+When `CMS_ENABLED=false`, CMS routes are not mounted and `/api/cms/*` returns the standard API 404 response.
+
+The CMS posts/pages API is available when `CMS_ENABLED=true`:
+
+```bash
+GET    /api/cms/posts
+GET    /api/cms/posts/:id
+POST   /api/cms/posts
+PUT    /api/cms/posts/:id
+DELETE /api/cms/posts/:id
+GET    /api/cms/public/pages/:slug
+GET    /api/cms/public/posts/:slug
+GET    /api/cms/posts/:id/revisions
+GET    /api/cms/posts/:id/revisions/:revisionId
+POST   /api/cms/posts/:id/revisions/:revisionId/restore
+GET    /api/cms/media
+GET    /api/cms/media/:id
+POST   /api/cms/media
+PUT    /api/cms/media/:id
+DELETE /api/cms/media/:id
+GET    /api/cms/menus
+GET    /api/cms/menus/:id
+POST   /api/cms/menus
+PUT    /api/cms/menus/:id
+DELETE /api/cms/menus/:id
+GET    /api/cms/menus/:id/items
+POST   /api/cms/menus/:id/items
+PUT    /api/cms/menus/:id/items/:itemId
+DELETE /api/cms/menus/:id/items/:itemId
+GET    /api/cms/public/menus/:location
+GET    /api/cms/terms
+GET    /api/cms/terms/:id
+POST   /api/cms/terms
+PUT    /api/cms/terms/:id
+DELETE /api/cms/terms/:id
+GET    /api/cms/posts/:id/terms
+PUT    /api/cms/posts/:id/terms
+GET    /api/cms/public/terms
+GET    /api/cms/public/terms/:taxonomy/:slug/posts
+```
+
+Admin CMS routes require authentication and admin access. Public CMS routes only return published content.
+
+The CMS admin shell is available when `CMS_ENABLED=true` and the current user is an admin:
+
+```bash
+/admin/cms
+/admin/cms/pages
+/admin/cms/pages/new
+/admin/cms/pages/:id
+/admin/cms/posts
+/admin/cms/posts/new
+/admin/cms/posts/:id
+/admin/cms/media
+/admin/cms/terms
+/admin/cms/menus
+```
+
+The first CMS content editor uses Markdown. Markdown source is stored in `content_json` with `format: "markdown"`, and preview/rendered HTML is submitted through `content_html`.
+
+CMS updates create revisions before changes are saved. The CMS editor includes a revision panel for existing pages/posts and supports restoring earlier revisions.
+
+CMS categories and tags use the optional `cms_terms` and `cms_post_terms` tables. Admins can manage terms from `/admin/cms/terms`, assign them in the content editor, and expose public filtered post archives.
+
+CMS media uses local file storage controlled by `CMS_MEDIA_DIR` and `CMS_MEDIA_PUBLIC_PATH`. Admins can upload, edit metadata, delete files, and insert uploaded media into Markdown content from the editor.
+
+CMS menus use `cms_menus` and `cms_menu_items`. Admins can create menus, assign a location such as `primary`, add custom/page/post/category/tag links, and public CMS templates render the `primary` menu when configured.
+
+CMS themes are selected with `CMS_THEME`. The default theme lives in `src/client/cms/themes/default/` and provides page, post, archive, and landing page templates. Page templates can be selected from the CMS editor.
+
+CMS public rendering is available when `CMS_ENABLED=true`:
+
+```bash
+/:slug
+/posts/:slug
+/category/:slug
+/tag/:slug
+```
+
+Explicit app and admin routes are matched first. CMS public routes run before the final not-found route and only render published content returned by the public CMS API.
+
 ## Project Dependencies
 
 This project utilizes several packages to enhance development and production workflows.
@@ -92,9 +187,11 @@ The `db/schema/` directory contains the SQL files for creating the application t
 
 Optional seed examples live in `db/seed/`. Review and replace placeholder values before running them.
 
+Optional CMS schema files live in `db/schema/cms/`. These files are only required when `CMS_ENABLED=true` and should be run after the base `user` and `sessions` schema files.
+
 ## Environment
 
-Startup requires `APP_PUBLIC_URL`, `JWT_SECRET`, `SESSION_SECRET`, `DB_HOST`, `DB_PORT`, `DB_USER`, and `DB_NAME`. `DB_PASSWORD` and email settings are optional at startup; missing optional values are logged as warnings and related features may be unavailable until configured.
+Startup requires `APP_PUBLIC_URL`, `JWT_SECRET`, `SESSION_SECRET`, `DB_HOST`, `DB_PORT`, `DB_USER`, and `DB_NAME`. `DB_PASSWORD` and email settings are optional at startup; missing optional values are logged as warnings and related features may be unavailable until configured. `CMS_ENABLED` controls whether optional CMS routes are registered. `CMS_THEME` controls the active CMS theme and defaults to `default`. CMS media can be configured with `CMS_MEDIA_DIR`, `CMS_MEDIA_PUBLIC_PATH`, `CMS_MEDIA_MAX_BYTES`, `CMS_MEDIA_ALLOWED_TYPES`, and `JSON_BODY_LIMIT`.
 
 ## License
 
@@ -106,12 +203,22 @@ This project is licensed under the ISC license.
 React-Express-Mysql/
 |-- db/
 |   |-- schema/
+|   |   |-- cms/
+|   |   |   |-- README.md
+|   |   |   |-- cms_media.sql
+|   |   |   |-- cms_menus.sql
+|   |   |   |-- cms_options.sql
+|   |   |   |-- cms_post_terms.sql
+|   |   |   |-- cms_posts.sql
+|   |   |   |-- cms_revisions.sql
+|   |   |   `-- cms_terms.sql
 |   |   |-- sessions.sql
 |   |   `-- user.sql
 |   `-- seed/
 |       `-- admin.example.sql
 |-- docs/
-|   `-- architecture.md
+|   |-- architecture.md
+|   `-- cms-plan.md
 |-- dist/                       # Generated by npm run build; do not commit
 |   |-- chunks/
 |   |-- public/
@@ -127,6 +234,35 @@ React-Express-Mysql/
 |       `-- .gitkeep
 |-- src/
 |   |-- client/
+|   |   |-- cms/
+|   |   |   |-- admin/
+|   |   |   |   |-- CmsAdminLayout.js
+|   |   |   |   |-- CmsDashboard.js
+|   |   |   |   |-- CmsMediaLibrary.js
+|   |   |   |   |-- CmsMenuBuilder.js
+|   |   |   |   |-- CmsPostEditor.js
+|   |   |   |   |-- CmsPostList.js
+|   |   |   |   `-- CmsTermManager.js
+|   |   |   |-- editor/
+|   |   |   |   `-- markdown.js
+|   |   |   |-- media/
+|   |   |   |   |-- MediaPicker.js
+|   |   |   |   `-- mediaFiles.js
+|   |   |   |-- public/
+|   |   |       |-- CmsContentView.js
+|   |   |       |-- CmsMenu.js
+|   |   |       |-- CmsNotFound.js
+|   |   |       |-- CmsPage.js
+|   |   |       |-- CmsPost.js
+|   |   |       `-- CmsTermArchive.js
+|   |   |   `-- themes/
+|   |   |       |-- default/
+|   |   |       |   |-- ArchiveTemplate.js
+|   |   |       |   |-- LandingPageTemplate.js
+|   |   |       |   |-- PageTemplate.js
+|   |   |       |   |-- PostTemplate.js
+|   |   |       |   `-- index.js
+|   |   |       `-- themeRegistry.js
 |   |   |-- components/
 |   |   |   |-- Button.js
 |   |   |   |-- Footer.js
@@ -151,6 +287,7 @@ React-Express-Mysql/
 |   |   |-- theme/
 |   |   |   `-- original.js
 |   |   |-- wrappers/
+|   |   |   |-- CmsEnabledWrapper.js
 |   |   |   |-- LoginWrapper.js
 |   |   |   |-- PrivateWrapper.js
 |   |   |   `-- SettingsWrapper.js
@@ -159,6 +296,44 @@ React-Express-Mysql/
 |   |   |-- index.js
 |   |   `-- layout.js
 |   `-- server/
+|       |-- cms/
+|       |   |-- cmsConfig.js
+|       |   |-- cmsModule.js
+|       |   |-- cmsModule.test.js
+|       |   |-- cmsRoutes.js
+|       |   |-- media/
+|       |   |   |-- mediaConfig.js
+|       |   |   |-- mediaController.js
+|       |   |   |-- mediaRepository.js
+|       |   |   |-- mediaRoutes.js
+|       |   |   |-- mediaRoutes.test.js
+|       |   |   |-- mediaService.js
+|       |   |   |-- mediaService.test.js
+|       |   |   `-- mediaValidation.js
+|       |   |-- menus/
+|       |   |   |-- menuController.js
+|       |   |   |-- menuRepository.js
+|       |   |   |-- menuRoutes.js
+|       |   |   |-- menuRoutes.test.js
+|       |   |   |-- menuService.js
+|       |   |   |-- menuService.test.js
+|       |   |   `-- menuValidation.js
+|       |   |-- posts/
+|       |   |   |-- postController.js
+|       |   |   |-- postRepository.js
+|       |   |   |-- postRoutes.js
+|       |   |   |-- postRoutes.test.js
+|       |   |   |-- postService.js
+|       |   |   |-- postService.test.js
+|       |   |   `-- postValidation.js
+|       |   `-- taxonomies/
+|       |       |-- termController.js
+|       |       |-- termRepository.js
+|       |       |-- termRoutes.js
+|       |       |-- termRoutes.test.js
+|       |       |-- termService.js
+|       |       |-- termService.test.js
+|       |       `-- termValidation.js
 |       |-- config/
 |       |   |-- auth.js
 |       |   |-- autoRenewToken.js

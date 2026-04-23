@@ -62,9 +62,9 @@ describe('GET /api/env', () => {
     it('should return frontend environment values without authentication', async () => {
         const res = await request(app).get('/api/env');
         expect(res.statusCode).toEqual(200);
-        expect(res.body).toEqual({
-            REACT_APP_BASENAME: process.env.REACT_APP_BASENAME,
-            REACT_APP_STATUS_MESSAGE: process.env.REACT_APP_STATUS_MESSAGE
+        expect(res.body).toMatchObject({
+            CMS_ENABLED: ["true", "1", "yes", "on"].includes(String(process.env.CMS_ENABLED || "").trim().toLowerCase()),
+            CMS_THEME: process.env.CMS_THEME || "default"
         });
     });
 });

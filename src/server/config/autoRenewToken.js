@@ -11,18 +11,22 @@ const publicApiPaths = new Set([
     '/api/signup',
 ]);
 
+const isPublicApiPath = (path) => (
+    publicApiPaths.has(path) || path.startsWith('/api/cms/public/')
+);
+
 const autoRenewToken = (req, res, next) => {
     if (!req.path.startsWith('/api') || req.path === '/api/logout') {
         return next();
     }
 
     const token = req.cookies.token;
-    const isPublicApiPath = publicApiPaths.has(req.path);
+    const isPublicPath = isPublicApiPath(req.path);
 
     if (token) {
         jwt.verify(token, secretKey, (err, decoded) => {
             if (err) {
-                if (isPublicApiPath) {
+                if (isPublicPath) {
                     res.clearCookie('token', tokenCookieOptions);
                     return next();
                 }

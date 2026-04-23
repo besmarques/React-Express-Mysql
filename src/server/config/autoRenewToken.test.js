@@ -13,6 +13,8 @@ const publicApiPaths = [
     '/api/reset-password',
     '/api/settings',
     '/api/signup',
+    '/api/cms/public/pages/home',
+    '/api/cms/public/posts/hello-world',
 ];
 
 const createApp = () => {

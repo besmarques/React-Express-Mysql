@@ -2,6 +2,7 @@ const express = require('express');
 const path = require('path');
 const cookieParser = require('cookie-parser');
 const autoRenewToken = require('./config/autoRenewToken');
+const { registerCmsModule } = require('./cms/cmsModule');
 const settingsRoutes = require('./settings/settingsRoutes');
 const mainRoutes = require('./main/mainRoutes');
 const userRoutes = require('./user/userRoutes');
@@ -10,8 +11,8 @@ const createApp = ({ sessionMiddleware, staticRoot = __dirname } = {}) => {
   const app = express();
   const resolvedSessionMiddleware = sessionMiddleware || require('./config/sessionConfig');
 
-  app.use(express.json());
-  app.use(express.urlencoded({ extended: true }));
+  app.use(express.json({ limit: process.env.JSON_BODY_LIMIT || '10mb' }));
+  app.use(express.urlencoded({ extended: true, limit: process.env.JSON_BODY_LIMIT || '10mb' }));
   app.use(resolvedSessionMiddleware);
   app.use(cookieParser());
   app.use(autoRenewToken);
@@ -19,6 +20,11 @@ const createApp = ({ sessionMiddleware, staticRoot = __dirname } = {}) => {
   app.use('/api', settingsRoutes);
   app.use('/api', mainRoutes);
   app.use('/api', userRoutes);
+  registerCmsModule(app);
+
+  app.use('/api', (req, res) => {
+    res.status(404).json({ message: 'API route not found' });
+  });
 
   app.use(express.static(path.join(staticRoot, 'public')));
 
