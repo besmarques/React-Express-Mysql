@@ -1,8 +1,17 @@
 Issues to solve
 ===============
 
+High priority
+-------------
+
+No open high-priority issues.
+
 Medium priority
 ---------------
 
+No open medium-priority issues.
+
 Lower priority
 --------------
+
+No open lower-priority issues.

@@ -1,6 +1,6 @@
 import axios from "axios";
 
-const getAuthState = ({ getStore, getActions, setStore }) => {
+const getAuthState = ({ getActions, setStore }) => {
     return {
         store: {
             token: null,
@@ -17,7 +17,6 @@ const getAuthState = ({ getStore, getActions, setStore }) => {
                     setStore({ isAuthenticated, isAdmin, isAuthLoading: false });
                     return { isAuthenticated, isAdmin };
                 } catch (err) {
-                    console.error(err);
                     setStore({ isAuthenticated: false, isAdmin: false, isAuthLoading: false });
                     return { isAuthenticated: false, isAdmin: false };
                 }
@@ -25,21 +24,18 @@ const getAuthState = ({ getStore, getActions, setStore }) => {
             signupUser: async (email, password) => {
                 try {
                     const response = await axios.post("/api/signup", { email, password });
-                    console.log("Signed up", response);
                     return response.data;
                 } catch (err) {
-                    console.error(err);
                     throw err;
                 }
             },
             loginUser: async (email, password) => {
-                getActions().logoutUser();
+                setStore({ isAuthenticated: false, isAdmin: false });
                 try {
                     const response = await axios.post("/api/login", { email, password });
                     await getActions().getToken();
                     return response.data;
                 } catch (err) {
-                    console.error(err);
                     throw err;
                 }
             },
@@ -47,7 +43,7 @@ const getAuthState = ({ getStore, getActions, setStore }) => {
                 try {
                     await axios.post("/api/logout");
                 } catch (err) {
-                    console.error(err);
+                    return;
                 } finally {
                     setStore({ isAuthenticated: false, isAdmin: false, isAuthLoading: false });
                 }

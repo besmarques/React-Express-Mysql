@@ -2,11 +2,12 @@ import React, { useState, useContext } from 'react';
 import { Context } from "../store/appContext";
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
+import getApiErrorMessage from '../utils/apiErrors';
 
 
 const Login = () => {
 
-    const { store, actions } = useContext(Context); 
+    const { actions } = useContext(Context); 
 
     const navigate = useNavigate();
 
@@ -21,7 +22,7 @@ const Login = () => {
     
             navigate('/');
         } catch (err) {
-            setError(err.response.data);
+            setError(getApiErrorMessage(err, 'Unable to log in.'));
         }
     };
 
@@ -30,7 +31,7 @@ const Login = () => {
             await axios.post('/api/forgot-password', { email });
             alert('If an account with this email exists, a password reset link has been sent.');
         } catch (err) {
-            console.error(err);
+            setError(getApiErrorMessage(err, 'Unable to request password reset.'));
         }
     };
 

@@ -5,7 +5,7 @@ const mainController = require("./mainController");
 
 router.get("/main-route", mainController.getMainRoute);
 router.get("/", authenticateJWT, mainController.getRoot);
-router.get("/env", authenticateJWT, mainController.getEnv);
+router.get("/env", mainController.getEnv);
 router.get("/auth-status", mainController.getAuthStatus);
 
 module.exports = router;

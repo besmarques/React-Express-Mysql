@@ -7,6 +7,11 @@
     "build": "webpack --config webpack.prod.js --mode production && node generatePackageJson.js",
     "dev": "nodemon --watch src --watch public --watch webpack.common.js --watch webpack.dev.js --watch .env --ignore dist --exec \"webpack --config webpack.dev.js --mode development && node dist/server.js -r newrelic\""
   },
+  "jest": {
+    "modulePathIgnorePatterns": [
+      "<rootDir>/dist"
+    ]
+  },
   "keywords": [],
   "author": {
     "name": "Bruno Marques",

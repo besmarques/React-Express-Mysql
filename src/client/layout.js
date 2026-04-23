@@ -2,17 +2,14 @@ import React, { lazy, Suspense } from "react";
 import { BrowserRouter, Route, Routes } from "react-router-dom";
 import injectContext from "./store/appContext";
 
-//Wrappers
 import PrivateWrapper from "./wrappers/PrivateWrapper";
 import LoginWrapper from "./wrappers/LoginWrapper";
 import SettingsWrapper from "./wrappers/SettingsWrapper";
 
-//Layouts
 const FullLayout = lazy(() => import("./layouts/FullLayout"));
 const NoSidebarLayout = lazy(() => import("./layouts/NoSidebarLayout"));
 const ContentOnlyLayout = lazy(() => import("./layouts/ContentOnly"));
 
-//Pages
 const Status = lazy(() => import("./pages/Status"));
 const Login = lazy(() => import("./pages/Login"));
 const Signup = lazy(() => import("./pages/Signup"));
@@ -20,7 +17,7 @@ const ResetPassword = lazy(() => import("./pages/ResetPassword"));
 const Admin = lazy(() => import("./pages/Admin"));
 
 const Layout = () => {
-    const basename = /*process.env.REACT_APP_BASENAME ||*/ "";
+    const basename = process.env.REACT_APP_BASENAME || "";
 
     return (
         <BrowserRouter basename={basename}>

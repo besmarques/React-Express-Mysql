@@ -1,21 +1,25 @@
-// mailConfig.js
 const nodemailer = require('nodemailer');
 
+const parseBoolean = (value, fallback = false) => {
+    if (value === undefined || value === '') {
+        return fallback;
+    }
+
+    return value.toLowerCase() === 'true';
+};
+
+const auth = process.env.EMAIL_PASSWORD
+    ? {
+        user: process.env.EMAIL_USERNAME,
+        pass: process.env.EMAIL_PASSWORD,
+    }
+    : undefined;
+
 const transporter = nodemailer.createTransport({
-    host: 'smtp.freesmtpservers.com',
-    port: 25,
-    secure: false, // true for 465, false for other ports
+    host: process.env.SMTP_HOST,
+    port: Number(process.env.SMTP_PORT),
+    secure: parseBoolean(process.env.SMTP_SECURE),
+    auth,
 });
 
 module.exports = transporter;
-
-
-
-    // Send the reset token to the user's email address
-    /*let transporter = nodemailer.createTransport({
-        service: 'gmail',
-        auth: {
-            user: process.env.EMAIL_USERNAME,
-            pass: process.env.EMAIL_PASSWORD
-        }
-    });*/

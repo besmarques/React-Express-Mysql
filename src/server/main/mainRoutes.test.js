@@ -1,6 +1,7 @@
 jest.mock("../config/logger", () => ({
     error: jest.fn(),
     info: jest.fn(),
+    warn: jest.fn(),
 }));
 
 jest.mock("jsonwebtoken", () => ({
@@ -8,32 +9,44 @@ jest.mock("jsonwebtoken", () => ({
     verify: jest.fn(),
 }));
 
-const express = require("express");
-const cookieParser = require("cookie-parser");
 const request = require("supertest");
 const jwt = require("jsonwebtoken");
-const mainRoutes = require("./mainRoutes");
+const createApp = require("../app");
 
-const createApp = () => {
-    const app = express();
+const createTestApp = () => createApp({
+    sessionMiddleware: (req, res, next) => {
+        req.session = {};
+        next();
+    },
+});
 
-    app.use(express.json());
-    app.use(cookieParser());
-    app.use("/api", mainRoutes);
-
-    return app;
-};
-
-const app = createApp();
+const app = createTestApp();
 
 beforeEach(() => {
     jest.clearAllMocks();
-    jwt.verify.mockImplementation((token) => {
+    const verifyToken = (token) => {
         if (token === "valid-token") {
-            return { isAdmin: true };
+            return { id: 1, isAdmin: true, exp: Math.floor(Date.now() / 1000) + 3600 };
         }
 
         throw new Error("invalid token");
+    };
+
+    jwt.verify.mockImplementation((token, secretOrCallback, maybeCallback) => {
+        const callback = typeof secretOrCallback === "function" ? secretOrCallback : maybeCallback;
+
+        try {
+            const decoded = verifyToken(token);
+            if (callback) {
+                return callback(null, decoded);
+            }
+            return decoded;
+        } catch (err) {
+            if (callback) {
+                return callback(err);
+            }
+            throw err;
+        }
     });
 });
 
@@ -52,14 +65,8 @@ describe("GET /api/", () => {
 });
 
 describe('GET /api/env', () => {
-    it('should return 401 Unauthorized if no authentication is provided', async () => {
+    it('should return frontend environment values without authentication', async () => {
         const res = await request(app).get('/api/env');
-        expect(res.statusCode).toEqual(401);
-    });
-
-    it('should return the environment variables if a valid token is provided', async () => {
-        const token = jwt.sign({ isAdmin: true });
-        const res = await request(app).get('/api/env').set('Cookie', `token=${token}`);
         expect(res.statusCode).toEqual(200);
         expect(res.body).toEqual({
             REACT_APP_BASENAME: process.env.REACT_APP_BASENAME,

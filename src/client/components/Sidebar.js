@@ -1,4 +1,4 @@
-import React, { useState, useContext } from 'react';
+import React, { useContext } from 'react';
 import { Context } from "../store/appContext";
 import { Link, useNavigate } from 'react-router-dom';
 
@@ -7,7 +7,7 @@ import CustomButton from '../components/Button';
 
 function Sidebar() {
 
-    const { store, actions } = useContext(Context); 
+    const { actions } = useContext(Context); 
 
     const navigate = useNavigate();
 
@@ -16,7 +16,7 @@ function Sidebar() {
             await actions.logoutUser();
             navigate('/login');
         } catch (err) {
-            console.error(err);
+            navigate('/login');
         }
     };
 
