@@ -40,9 +40,11 @@ const loginUser = async (email, password) => {
         throw createHttpError(401, invalidLoginResponse);
     }
 
-    const token = jwt.sign({ id: user.id, isAdmin: user.is_admin }, secretKey, { expiresIn: "1h" });
+    const permissions = await userRepository.getUserPermissions(user.id);
+    const token = jwt.sign({ id: user.id, isAdmin: user.is_admin, permissions }, secretKey, { expiresIn: "1h" });
 
     return {
+        permissions,
         token,
         userId: user.id,
     };

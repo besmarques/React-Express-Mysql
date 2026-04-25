@@ -86,6 +86,6 @@ describe('GET /api/auth-status', () => {
         const token = jwt.sign({ isAdmin: true });
         const res = await request(app).get('/api/auth-status').set('Cookie', `token=${token}`);
         expect(res.statusCode).toEqual(200);
-        expect(res.body).toEqual({ isAuthenticated: true, isAdmin: true });
+        expect(res.body).toEqual({ isAuthenticated: true, isAdmin: true, permissions: [], canAccessCms: true });
     });
 });

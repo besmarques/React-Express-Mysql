@@ -19,5 +19,5 @@ db/schema/cms/cms_post_terms.sql
 db/schema/cms/cms_media.sql
 db/schema/cms/cms_options.sql
 db/schema/cms/cms_menus.sql
+db/schema/cms/cms_permissions.sql
 ```
-

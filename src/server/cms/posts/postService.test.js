@@ -61,7 +61,7 @@ describe("postService admin content", () => {
         const createdPost = { id: 1, ...payload, authorId: 7 };
         postRepository.createPost.mockResolvedValue(createdPost);
 
-        await expect(postService.createPost(payload, 7)).resolves.toEqual(createdPost);
+        await expect(postService.createPost(payload, { id: 7, isAdmin: false, permissions: ["cms.posts.create"] })).resolves.toEqual(createdPost);
 
         expect(postRepository.createPost).toHaveBeenCalledWith({
             ...payload,
@@ -77,7 +77,7 @@ describe("postService admin content", () => {
     });
 
     it("rejects invalid post types", async () => {
-        await expect(postService.createPost({ type: "event", title: "Event", slug: "event" }, 7))
+        await expect(postService.createPost({ type: "event", title: "Event", slug: "event" }, { id: 7, isAdmin: false, permissions: ["cms.posts.create"] }))
             .rejects
             .toMatchObject({
                 statusCode: 400,
@@ -103,7 +103,7 @@ describe("postService admin content", () => {
         postRepository.createRevision.mockResolvedValue({ id: 1, postId: 1, title: "Old" });
         postRepository.updatePost.mockResolvedValue(updatedPost);
 
-        await expect(postService.updatePost(1, { title: "New" }, 7)).resolves.toEqual(updatedPost);
+        await expect(postService.updatePost(1, { title: "New" }, { id: 7, isAdmin: false, permissions: ["cms.posts.update"] })).resolves.toEqual(updatedPost);
 
         expect(postRepository.createRevision).toHaveBeenCalledWith(1, existingPost, 7);
         expect(postRepository.updatePost).toHaveBeenCalledWith(1, expect.objectContaining({
@@ -125,6 +125,20 @@ describe("postService admin content", () => {
                 statusCode: 404,
                 responseBody: { message: "CMS post not found." },
             });
+    });
+
+    it("requires publish permission when creating published content", async () => {
+        await expect(postService.createPost(
+            { type: "page", status: "published", title: "Home", slug: "home" },
+            { id: 7, isAdmin: false, permissions: ["cms.posts.create"] }
+        ))
+            .rejects
+            .toMatchObject({
+                statusCode: 403,
+                responseBody: { message: "Forbidden: Publish permission required." },
+            });
+
+        expect(postRepository.createPost).not.toHaveBeenCalled();
     });
 });
 
@@ -184,7 +198,7 @@ describe("postService revisions", () => {
         postRepository.createRevision.mockResolvedValue({ id: 3, postId: 1, title: "Current" });
         postRepository.updatePost.mockResolvedValue(restoredPost);
 
-        await expect(postService.restorePostRevision(1, 2, 7)).resolves.toEqual(restoredPost);
+        await expect(postService.restorePostRevision(1, 2, { id: 7, isAdmin: false, permissions: ["cms.posts.update"] })).resolves.toEqual(restoredPost);
 
         expect(postRepository.createRevision).toHaveBeenCalledWith(1, currentPost, 7);
         expect(postRepository.updatePost).toHaveBeenCalledWith(1, expect.objectContaining({
@@ -195,5 +209,19 @@ describe("postService revisions", () => {
             contentJson: { format: "markdown", markdown: "# Restored" },
             contentHtml: "<h1>Restored</h1>",
         }));
+    });
+
+    it("requires publish permission when restoring a published revision", async () => {
+        postRepository.findById.mockResolvedValue({ id: 1, status: "draft", title: "Current", slug: "current" });
+        postRepository.findRevisionById.mockResolvedValue({ id: 2, status: "published", title: "Restored", slug: "restored" });
+
+        await expect(postService.restorePostRevision(1, 2, { id: 7, isAdmin: false, permissions: ["cms.posts.update"] }))
+            .rejects
+            .toMatchObject({
+                statusCode: 403,
+                responseBody: { message: "Forbidden: Publish permission required." },
+            });
+
+        expect(postRepository.updatePost).not.toHaveBeenCalled();
     });
 });

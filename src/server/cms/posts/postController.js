@@ -42,7 +42,7 @@ const getPostById = async (req, res) => {
 
 const createPost = async (req, res) => {
     try {
-        const post = await postService.createPost(req.body, req.user.id);
+        const post = await postService.createPost(req.body, req.user);
         return res.status(201).json(post);
     } catch (err) {
         return sendError(res, err);
@@ -51,7 +51,7 @@ const createPost = async (req, res) => {
 
 const updatePost = async (req, res) => {
     try {
-        const post = await postService.updatePost(req.params.id, req.body, req.user.id);
+        const post = await postService.updatePost(req.params.id, req.body, req.user);
         return res.json(post);
     } catch (err) {
         return sendError(res, err);
@@ -87,7 +87,7 @@ const getPostRevision = async (req, res) => {
 
 const restorePostRevision = async (req, res) => {
     try {
-        const post = await postService.restorePostRevision(req.params.id, req.params.revisionId, req.user.id);
+        const post = await postService.restorePostRevision(req.params.id, req.params.revisionId, req.user);
         return res.json(post);
     } catch (err) {
         return sendError(res, err);

@@ -10,6 +10,30 @@ const findByEmail = async (email) => {
     return users[0];
 };
 
+const getUserPermissions = async (userId) => {
+    try {
+        const [permissions] = await connections.execute(
+            `SELECT DISTINCT cms_permissions.name
+             FROM cms_permissions
+             INNER JOIN cms_role_permissions
+                ON cms_role_permissions.permission_id = cms_permissions.id
+             INNER JOIN cms_user_roles
+                ON cms_user_roles.role_id = cms_role_permissions.role_id
+             WHERE cms_user_roles.user_id = ?
+             ORDER BY cms_permissions.name ASC`,
+            [userId]
+        );
+
+        return permissions.map((permission) => permission.name);
+    } catch (err) {
+        if (err && (err.code === "ER_NO_SUCH_TABLE" || err.code === "ER_BAD_TABLE_ERROR")) {
+            return [];
+        }
+
+        throw err;
+    }
+};
+
 const createUser = async (email, hashedPassword) => {
     await connections.execute("INSERT INTO user (email, password) VALUES (?, ?)", [email, hashedPassword]);
 };
@@ -42,6 +66,7 @@ module.exports = {
     createUser,
     findByEmail,
     findByResetToken,
+    getUserPermissions,
     getUsers,
     saveResetToken,
     updatePasswordByResetToken,

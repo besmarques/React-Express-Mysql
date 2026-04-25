@@ -167,7 +167,7 @@ describe("CMS admin post routes", () => {
 
         expect(res.statusCode).toEqual(201);
         expect(res.body).toEqual(createdPost);
-        expect(postService.createPost).toHaveBeenCalledWith(payload, 1);
+        expect(postService.createPost).toHaveBeenCalledWith(payload, expect.objectContaining({ id: 1, isAdmin: true }));
     });
 
     it("updates posts for admins", async () => {
@@ -181,7 +181,7 @@ describe("CMS admin post routes", () => {
 
         expect(res.statusCode).toEqual(200);
         expect(res.body).toEqual(updatedPost);
-        expect(postService.updatePost).toHaveBeenCalledWith("3", { title: "Updated", slug: "updated" }, 1);
+        expect(postService.updatePost).toHaveBeenCalledWith("3", { title: "Updated", slug: "updated" }, expect.objectContaining({ id: 1, isAdmin: true }));
     });
 
     it("deletes posts for admins", async () => {
@@ -231,7 +231,7 @@ describe("CMS admin post routes", () => {
 
         expect(res.statusCode).toEqual(200);
         expect(res.body).toEqual(restoredPost);
-        expect(postService.restorePostRevision).toHaveBeenCalledWith("3", "2", 1);
+        expect(postService.restorePostRevision).toHaveBeenCalledWith("3", "2", expect.objectContaining({ id: 1, isAdmin: true }));
     });
 });
 

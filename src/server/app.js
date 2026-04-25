@@ -2,7 +2,7 @@ const express = require('express');
 const path = require('path');
 const cookieParser = require('cookie-parser');
 const autoRenewToken = require('./config/autoRenewToken');
-const { registerCmsModule } = require('./cms/cmsModule');
+const { registerEnabledModules } = require('./modules/moduleRegistry');
 const settingsRoutes = require('./settings/settingsRoutes');
 const mainRoutes = require('./main/mainRoutes');
 const userRoutes = require('./user/userRoutes');
@@ -20,7 +20,7 @@ const createApp = ({ sessionMiddleware, staticRoot = __dirname } = {}) => {
   app.use('/api', settingsRoutes);
   app.use('/api', mainRoutes);
   app.use('/api', userRoutes);
-  registerCmsModule(app);
+  registerEnabledModules(app);
 
   app.use('/api', (req, res) => {
     res.status(404).json({ message: 'API route not found' });

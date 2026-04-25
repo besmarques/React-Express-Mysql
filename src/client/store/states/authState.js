@@ -3,10 +3,12 @@ import axios from "axios";
 const getAuthState = ({ getActions, setStore }) => {
     return {
         store: {
+            canAccessCms: false,
             token: null,
             isAuthenticated: false,
             isAdmin: false,
             isAuthLoading: true,
+            permissions: [],
         },
         actions: {
             getToken: async () => {
@@ -14,11 +16,13 @@ const getAuthState = ({ getActions, setStore }) => {
                     const response = await axios.get('/api/auth-status');
                     const isAuthenticated = response.data.isAuthenticated;
                     const isAdmin = Boolean(response.data.isAdmin);
-                    setStore({ isAuthenticated, isAdmin, isAuthLoading: false });
-                    return { isAuthenticated, isAdmin };
+                    const permissions = Array.isArray(response.data.permissions) ? response.data.permissions : [];
+                    const canAccessCms = Boolean(response.data.canAccessCms);
+                    setStore({ canAccessCms, isAuthenticated, isAdmin, isAuthLoading: false, permissions });
+                    return { canAccessCms, isAuthenticated, isAdmin, permissions };
                 } catch (err) {
-                    setStore({ isAuthenticated: false, isAdmin: false, isAuthLoading: false });
-                    return { isAuthenticated: false, isAdmin: false };
+                    setStore({ canAccessCms: false, isAuthenticated: false, isAdmin: false, isAuthLoading: false, permissions: [] });
+                    return { canAccessCms: false, isAuthenticated: false, isAdmin: false, permissions: [] };
                 }
             },
             signupUser: async (email, password) => {
@@ -30,7 +34,7 @@ const getAuthState = ({ getActions, setStore }) => {
                 }
             },
             loginUser: async (email, password) => {
-                setStore({ isAuthenticated: false, isAdmin: false });
+                setStore({ canAccessCms: false, isAuthenticated: false, isAdmin: false, permissions: [] });
                 try {
                     const response = await axios.post("/api/login", { email, password });
                     await getActions().getToken();
@@ -45,7 +49,7 @@ const getAuthState = ({ getActions, setStore }) => {
                 } catch (err) {
                     return;
                 } finally {
-                    setStore({ isAuthenticated: false, isAdmin: false, isAuthLoading: false });
+                    setStore({ canAccessCms: false, isAuthenticated: false, isAdmin: false, isAuthLoading: false, permissions: [] });
                 }
             },
         },

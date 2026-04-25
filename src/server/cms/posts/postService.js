@@ -1,4 +1,5 @@
 const postRepository = require("./postRepository");
+const { permissions } = require("../permissions/permissionConstants");
 
 const allowedTypes = new Set(["post", "page"]);
 const allowedStatuses = new Set(["draft", "published", "private", "trash"]);
@@ -34,6 +35,17 @@ const assertAllowedPost = (post) => {
     }
 };
 
+const hasPermission = (user, permission) => (
+    Boolean(user && user.isAdmin)
+        || Boolean(user && Array.isArray(user.permissions) && user.permissions.includes(permission))
+);
+
+const assertPublishPermission = (post, user) => {
+    if (post.status === "published" && !hasPermission(user, permissions.cmsPostsPublish)) {
+        throw createHttpError(403, { message: "Forbidden: Publish permission required." });
+    }
+};
+
 const getPosts = async (filters = {}) => postRepository.listPosts(filters);
 
 const getPostById = async (id) => {
@@ -46,22 +58,24 @@ const getPostById = async (id) => {
     return post;
 };
 
-const createPost = async (payload, authorId) => {
+const createPost = async (payload, user) => {
     const post = normalizePostInput(payload);
     assertAllowedPost(post);
+    assertPublishPermission(post, user);
 
     return postRepository.createPost({
         ...post,
-        authorId,
+        authorId: user.id,
     });
 };
 
-const updatePost = async (id, payload, authorId) => {
+const updatePost = async (id, payload, user) => {
     const existingPost = await getPostById(id);
     const post = normalizePostInput(payload, existingPost);
     assertAllowedPost(post);
+    assertPublishPermission(post, user);
 
-    await postRepository.createRevision(id, existingPost, authorId ?? existingPost.authorId);
+    await postRepository.createRevision(id, existingPost, user.id ?? existingPost.authorId);
     const updatedPost = await postRepository.updatePost(id, post);
 
     if (!updatedPost) {
@@ -108,11 +122,12 @@ const getPostRevisions = async (postId) => {
     return postRepository.listRevisions(postId);
 };
 
-const restorePostRevision = async (postId, revisionId, authorId) => {
+const restorePostRevision = async (postId, revisionId, user) => {
     const existingPost = await getPostById(postId);
     const revision = await getPostRevision(postId, revisionId);
+    assertPublishPermission({ status: revision.status }, user);
 
-    await postRepository.createRevision(postId, existingPost, authorId);
+    await postRepository.createRevision(postId, existingPost, user.id);
 
     const restoredPost = await postRepository.updatePost(postId, {
         ...existingPost,

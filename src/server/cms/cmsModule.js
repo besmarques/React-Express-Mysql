@@ -1,19 +1,15 @@
-const express = require('express');
-const cmsRoutes = require('./cmsRoutes');
-const { isCmsEnabled } = require('./cmsConfig');
-const { getMediaConfig } = require('./media/mediaConfig');
+const cmsModule = require('../modules/cmsModule');
 
 const registerCmsModule = (app, env = process.env) => {
-    if (!isCmsEnabled(env)) {
+    if (!cmsModule.enabled(env)) {
         return false;
     }
 
-    const mediaConfig = getMediaConfig(env);
-    app.use(mediaConfig.publicPath, express.static(mediaConfig.directory));
-    app.use('/api/cms', cmsRoutes);
+    cmsModule.registerServer(app, env);
     return true;
 };
 
 module.exports = {
+    cmsModule,
     registerCmsModule,
 };

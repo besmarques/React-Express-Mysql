@@ -7,6 +7,10 @@ jest.mock("bcrypt", () => ({
     hash: jest.fn(() => Promise.resolve("hashed-password")),
 }));
 
+jest.mock("jsonwebtoken", () => ({
+    sign: jest.fn(() => "signed-token"),
+}));
+
 jest.mock("../config/email", () => ({
     sendMail: jest.fn(),
 }));
@@ -15,6 +19,7 @@ jest.mock("./userRepository", () => ({
     createUser: jest.fn(),
     findByEmail: jest.fn(),
     findByResetToken: jest.fn(),
+    getUserPermissions: jest.fn(),
     getUsers: jest.fn(),
     saveResetToken: jest.fn(),
     updatePasswordByResetToken: jest.fn(),
@@ -98,5 +103,23 @@ describe("userService login", () => {
         await expect(userService.loginUser("user@example.com", "wrong-password"))
             .rejects
             .toMatchObject({ statusCode: 401, responseBody: "Invalid email or password" });
+    });
+
+    it("includes role permissions in the issued token payload", async () => {
+        userRepository.findByEmail.mockResolvedValue({ id: 1, email: "user@example.com", password: "hash", is_admin: 0 });
+        userRepository.getUserPermissions.mockResolvedValue(["cms.posts.read", "cms.posts.create"]);
+        require("bcrypt").compare.mockResolvedValueOnce(true);
+
+        await userService.loginUser("user@example.com", "password");
+
+        expect(require("jsonwebtoken").sign).toHaveBeenCalledWith(
+            expect.objectContaining({
+                id: 1,
+                isAdmin: 0,
+                permissions: ["cms.posts.read", "cms.posts.create"],
+            }),
+            "test-secret",
+            { expiresIn: "1h" }
+        );
     });
 });

@@ -2,7 +2,7 @@ import React, { useContext } from 'react';
 import { Navigate } from 'react-router-dom';
 import { Context } from "../store/appContext";
 
-const PrivateWrapper = ({ children, isAdminPage = false }) => {
+const PrivateWrapper = ({ children, isAdminPage = false, requireCmsAccess = false }) => {
     const { store } = useContext(Context);
 
     if (store.isAuthLoading) {
@@ -14,6 +14,10 @@ const PrivateWrapper = ({ children, isAdminPage = false }) => {
     }
 
     if (isAdminPage && !store.isAdmin) {
+        return <Navigate to="/" />;
+    }
+
+    if (requireCmsAccess && !store.canAccessCms) {
         return <Navigate to="/" />;
     }
 

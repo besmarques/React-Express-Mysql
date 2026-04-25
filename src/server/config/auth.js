@@ -28,5 +28,20 @@ const authorizeAdmin = (req, res, next) => {
     return next();
 };
 
+const hasPermission = (req, permission) => (
+    Boolean(req.user && req.user.isAdmin)
+        || Boolean(req.user && Array.isArray(req.user.permissions) && req.user.permissions.includes(permission))
+);
+
+const authorizePermission = (permission) => (req, res, next) => {
+    if (!hasPermission(req, permission)) {
+        logger.warn(`403 - Forbidden: Permission required (${permission})`);
+        return res.status(403).send("Forbidden: Insufficient permissions");
+    }
+
+    return next();
+};
+
 module.exports = authenticateJWT;
 module.exports.authorizeAdmin = authorizeAdmin;
+module.exports.authorizePermission = authorizePermission;

@@ -16,6 +16,19 @@ A step-by-step plan for evolving this boilerplate into an optional WordPress-lik
 
 CMS support is disabled by default. Set `CMS_ENABLED=true` to register CMS API routes.
 
+## CMS Enablement Checklist
+
+1. Set `CMS_ENABLED=true` in `.env`.
+2. Keep `CMS_THEME=default` unless you have added another theme under `src/client/cms/themes/`.
+3. Run the base schema files in `db/schema/` first.
+4. Run the optional CMS schema files in `db/schema/cms/`.
+5. Ensure `APP_PUBLIC_URL` matches the public app URL used in reset links and CMS-generated URLs.
+6. If you plan to use uploads, set `CMS_MEDIA_DIR`, `CMS_MEDIA_PUBLIC_PATH`, `CMS_MEDIA_MAX_BYTES`, and `CMS_MEDIA_ALLOWED_TYPES`.
+7. If you plan to use forgot-password emails, configure SMTP values.
+8. Start the app and verify `GET /api/cms/health` returns `200` when CMS is enabled.
+9. Log in with an admin or a user that has CMS permissions.
+10. Validate the basic CMS flow in order: create page, publish page, open public page, upload media, assign terms, configure menu.
+
 Phase 1 adds the CMS module boundary and a health endpoint:
 
 ```bash
@@ -91,6 +104,18 @@ CMS media uses local file storage controlled by `CMS_MEDIA_DIR` and `CMS_MEDIA_P
 CMS menus use `cms_menus` and `cms_menu_items`. Admins can create menus, assign a location such as `primary`, add custom/page/post/category/tag links, and public CMS templates render the `primary` menu when configured.
 
 CMS themes are selected with `CMS_THEME`. The default theme lives in `src/client/cms/themes/default/` and provides page, post, archive, and landing page templates. Page templates can be selected from the CMS editor.
+
+CMS permissions use `cms_roles`, `cms_permissions`, `cms_user_roles`, and `cms_role_permissions`. CMS and `/api/users` access are permission-based, while `is_admin` still acts as a bootstrap shortcut with full access.
+
+CMS now registers through shared module registries under `src/server/modules/` and `src/client/modules/`. The current contract is intentionally small so future app modules can follow the same pattern without a full plugin runtime:
+
+```text
+name
+enabled(configOrStore)
+registerServer(app)   // server only
+clientRoutes          // client only
+navigationItems       // client only
+```
 
 CMS public rendering is available when `CMS_ENABLED=true`:
 
@@ -208,6 +233,7 @@ React-Express-Mysql/
 |   |   |   |-- cms_media.sql
 |   |   |   |-- cms_menus.sql
 |   |   |   |-- cms_options.sql
+|   |   |   |-- cms_permissions.sql
 |   |   |   |-- cms_post_terms.sql
 |   |   |   |-- cms_posts.sql
 |   |   |   |-- cms_revisions.sql
@@ -284,6 +310,9 @@ React-Express-Mysql/
 |   |   |   |   `-- envState.js
 |   |   |   |-- appContext.js
 |   |   |   `-- combinedState.js
+|   |   |-- modules/
+|   |   |   |-- cmsModule.js
+|   |   |   `-- moduleRegistry.js
 |   |   |-- theme/
 |   |   |   `-- original.js
 |   |   |-- wrappers/
@@ -301,6 +330,8 @@ React-Express-Mysql/
 |       |   |-- cmsModule.js
 |       |   |-- cmsModule.test.js
 |       |   |-- cmsRoutes.js
+|       |   |-- permissions/
+|       |   |   `-- permissionConstants.js
 |       |   |-- media/
 |       |   |   |-- mediaConfig.js
 |       |   |   |-- mediaController.js
@@ -351,6 +382,10 @@ React-Express-Mysql/
 |       |   |-- mainRoutes.js
 |       |   |-- mainRoutes.test.js
 |       |   `-- mainService.js
+|       |-- modules/
+|       |   |-- cmsModule.js
+|       |   |-- moduleRegistry.js
+|       |   `-- moduleRegistry.test.js
 |       |-- settings/
 |       |   |-- settingsController.js
 |       |   |-- settingsRoutes.js

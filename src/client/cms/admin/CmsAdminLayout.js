@@ -1,5 +1,6 @@
 import React from "react";
 import { Link } from "react-router-dom";
+import { cmsAdminNavigationItems } from "../../modules/cmsModule";
 
 const CmsAdminLayout = ({ children }) => (
     <section className="p-3">
@@ -9,12 +10,11 @@ const CmsAdminLayout = ({ children }) => (
                 <p className="text-muted mb-0">Manage pages and posts.</p>
             </div>
             <nav className="d-flex gap-2">
-                <Link to="/admin/cms" className="btn btn-outline-secondary">Dashboard</Link>
-                <Link to="/admin/cms/pages" className="btn btn-outline-primary">Pages</Link>
-                <Link to="/admin/cms/posts" className="btn btn-outline-primary">Posts</Link>
-                <Link to="/admin/cms/media" className="btn btn-outline-primary">Media</Link>
-                <Link to="/admin/cms/terms" className="btn btn-outline-primary">Terms</Link>
-                <Link to="/admin/cms/menus" className="btn btn-outline-primary">Menus</Link>
+                {cmsAdminNavigationItems.map((item) => (
+                    <Link key={item.to} to={item.to} className={item.variant}>
+                        {item.label}
+                    </Link>
+                ))}
             </nav>
         </header>
         {children}

@@ -1,5 +1,6 @@
 const jwt = require("jsonwebtoken");
 const { isCmsEnabled } = require("../cms/cmsConfig");
+const { cmsAccessPermissions } = require("../cms/permissions/permissionConstants");
 
 const secretKey = process.env.JWT_SECRET;
 
@@ -17,9 +18,12 @@ const getAuthStatus = (token) => {
 
     try {
         const decoded = jwt.verify(token, secretKey);
+        const permissions = Array.isArray(decoded.permissions) ? decoded.permissions : [];
         return {
+            canAccessCms: Boolean(decoded.isAdmin) || permissions.some((permission) => cmsAccessPermissions.includes(permission)),
             isAuthenticated: true,
             isAdmin: decoded.isAdmin,
+            permissions,
         };
     } catch (err) {
         return { isAuthenticated: false };

@@ -269,6 +269,8 @@ Expected result: CMS public rendering can be themed without changing core CMS lo
 
 ## Phase 12: Roles And Permissions
 
+Status: implemented. CMS access now supports role-based permissions via `cms_roles`, `cms_permissions`, `cms_user_roles`, and `cms_role_permissions`, while `is_admin` still works as a bootstrap shortcut.
+
 1. Replace CMS admin checks with permission checks.
 2. Add role tables:
 
@@ -300,6 +302,8 @@ Expected result: CMS access can be delegated without giving every editor full ad
 
 ## Phase 13: Plugin-Like Module Registry
 
+Status: implemented. CMS now registers through shared server/client module registries, and admin/module entry points are driven by module metadata instead of hardcoded CMS wiring.
+
 1. Avoid a full plugin runtime at first.
 2. Add a simple module registry:
 
@@ -324,6 +328,8 @@ navigationItems
 Expected result: CMS becomes one optional module among possible future modules.
 
 ## Phase 14: Documentation And Diagrams
+
+Status: implemented. The architecture docs now include CMS module diagrams, a CMS database diagram, publish and editor-save sequence flows, README setup notes, and a CMS enablement checklist.
 
 1. Update `docs/architecture.md` with CMS module diagrams.
 2. Add CMS database diagram.
