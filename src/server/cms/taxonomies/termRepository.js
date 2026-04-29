@@ -1,14 +1,14 @@
 const connections = require("../../config/dbpool");
 
 const termFields = `
-    id,
-    taxonomy,
-    name,
-    slug,
-    description,
-    parent_id AS parentId,
-    created_at AS createdAt,
-    updated_at AS updatedAt
+    cms_terms.id,
+    cms_terms.taxonomy,
+    cms_terms.name,
+    cms_terms.slug,
+    cms_terms.description,
+    cms_terms.parent_id AS parentId,
+    cms_terms.created_at AS createdAt,
+    cms_terms.updated_at AS updatedAt
 `;
 
 const postFields = `

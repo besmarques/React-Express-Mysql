@@ -41,7 +41,10 @@ describe("optional CMS module", () => {
         const res = await request(app).get("/api/cms/health");
 
         expect(res.statusCode).toEqual(404);
-        expect(res.body).toEqual({ message: "API route not found" });
+        expect(res.body).toEqual({
+            code: "API_ROUTE_NOT_FOUND",
+            message: "The requested API route was not found.",
+        });
     });
 
     it("registers CMS routes when CMS is enabled", async () => {

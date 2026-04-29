@@ -1,7 +1,6 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
-import CmsAdminLayout from "./CmsAdminLayout";
-import readFileAsDataUrl from "../media/mediaFiles";
+import readFileAsDataUrl from "../../media/mediaFiles";
 import getApiErrorMessage from "../../utils/apiErrors";
 
 const emptyUploadForm = {
@@ -113,7 +112,7 @@ const CmsMediaLibrary = () => {
     };
 
     return (
-        <CmsAdminLayout>
+        <>
             <div className="d-flex align-items-center justify-content-between mb-3">
                 <h2 className="h4 mb-0">Media</h2>
             </div>
@@ -205,7 +204,7 @@ const CmsMediaLibrary = () => {
                     )}
                 </div>
             </div>
-        </CmsAdminLayout>
+        </>
     );
 };
 

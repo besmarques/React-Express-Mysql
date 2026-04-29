@@ -44,6 +44,8 @@ flowchart TB
         Layouts["layouts\nFullLayout, NoSidebarLayout,\nContentOnly"]
         Components["components\nNavbar, Sidebar, Footer, Button"]
         Pages["pages\nLogin, Signup, ResetPassword,\nStatus, Admin"]
+        Editors["editor\nRichTextEditor,\nGrapesPageEditor, markdown"]
+        Media["media\nMediaPicker, mediaFiles"]
         Store["store\nappContext, combinedState"]
         States["store/states\nauthState, envState"]
         Utils["utils\napiErrors"]
@@ -54,6 +56,7 @@ flowchart TB
         ServerEntry["server.js\nstartup"]
         AppFactory["app.js\nExpress app factory"]
         Config["config\nauth, autoRenewToken,\ncookies, dbpool, email,\nsession, env validation, logger"]
+        ErrorResponses["config/errorResponses.js\nshared API error envelope"]
         MainModule["main\nhealth, env, auth-status"]
         SettingsModule["settings\nfeature flags"]
         UserModule["user\nauth, users, password reset"]
@@ -82,6 +85,8 @@ flowchart TB
     Router --> Pages
     Router --> ClientModules
     Layouts --> Components
+    Pages --> Editors
+    Pages --> Media
     Pages --> Utils
     States -->|HTTP calls| AppFactory
     
@@ -93,6 +98,7 @@ flowchart TB
     ServerEntry --> Config
     ServerEntry --> AppFactory
     AppFactory --> Config
+    Config --> ErrorResponses
     AppFactory --> MainModule
     AppFactory --> SettingsModule
     AppFactory --> UserModule
@@ -188,6 +194,7 @@ erDiagram
         VARCHAR status
         VARCHAR title
         VARCHAR slug
+        VARCHAR template
         LONGTEXT content_json
         MEDIUMTEXT content_html
         INT author_id
@@ -213,6 +220,7 @@ erDiagram
         VARCHAR name
         VARCHAR slug
         TEXT description
+        INT parent_id
         TIMESTAMP created_at
         DATETIME updated_at
     }
@@ -235,6 +243,7 @@ erDiagram
     cms_menus {
         INT id PK
         VARCHAR name
+        VARCHAR slug
         VARCHAR location
         TIMESTAMP created_at
         DATETIME updated_at
@@ -249,6 +258,7 @@ erDiagram
         INT linked_post_id
         INT linked_term_id
         INT parent_id
+        INT sort_order
     }
 
     cms_roles {
@@ -314,7 +324,8 @@ sequenceDiagram
 sequenceDiagram
     participant Editor as Editor
     participant Form as CmsPostEditor
-    participant Markdown as "markdown renderer"
+    participant RichText as "RichTextEditor (TinyMCE)"
+    participant Builder as "GrapesPageEditor"
     participant Media as "MediaPicker"
     participant API as "/api/cms/posts and related endpoints"
     participant Server as "postController and postService"
@@ -327,11 +338,16 @@ sequenceDiagram
     DB-->>Server: rows
     Server-->>Form: editor payload
 
-    Editor->>Media: optionally choose uploaded media
-    Media-->>Form: markdown snippet or asset metadata
-    Editor->>Form: update title, excerpt, markdown, status, template
-    Form->>Markdown: render preview html
-    Markdown-->>Form: content_html
+    Editor->>Form: update title, excerpt, status, template
+    alt page with visual builder enabled
+        Editor->>Builder: edit sections and layout
+        Builder-->>Form: grapesjs content_json + content_html
+    else post or non-builder page
+        Editor->>Media: optionally choose uploaded media
+        Media-->>RichText: asset metadata
+        Editor->>RichText: edit rich text content
+        RichText-->>Form: tinymce html
+    end
     Form->>API: POST or PUT editor payload
     API->>Server: validate and save
     Server->>DB: write cms_posts and cms_revisions
@@ -442,7 +458,7 @@ sequenceDiagram
         Controller->>Session: set req.session.userId
         Controller-->>AuthState: Set-Cookie token + Logged in
         AuthState->>API: GET /api/auth-status
-        API-->>AuthState: isAuthenticated and isAdmin
+        API-->>AuthState: isAuthenticated, isAdmin, permissions, canAccessCms
         AuthState-->>Page: update auth store
     end
 ```
@@ -494,14 +510,14 @@ sequenceDiagram
     end
 ```
 
-## Protected Admin Users Flow
+## Protected Users Management Flow
 
 ```mermaid
 sequenceDiagram
     participant Client as React client
     participant API as GET /api/users
     participant Auth as authenticateJWT
-    participant Admin as authorizeAdmin
+    participant Permission as "authorizePermission(users.manage)"
     participant Controller as userController
     participant Service as userService
     participant Repo as userRepository
@@ -514,11 +530,11 @@ sequenceDiagram
     else invalid or expired token
         Auth-->>Client: 403 Forbidden
     else valid token
-        Auth->>Admin: check isAdmin
-        alt not admin
-            Admin-->>Client: 403 Forbidden
-        else admin
-            Admin->>Controller: getUsers
+        Auth->>Permission: check users.manage or admin bypass
+        alt lacks permission
+            Permission-->>Client: 403 Forbidden
+        else allowed
+            Permission->>Controller: getUsers
             Controller->>Service: getUsers
             Service->>Repo: getUsers
             Repo->>DB: SELECT id, email, is_admin

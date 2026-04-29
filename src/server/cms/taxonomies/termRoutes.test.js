@@ -27,6 +27,11 @@ const createApp = require("../../app");
 const termService = require("./termService");
 
 const originalCmsEnabled = process.env.CMS_ENABLED;
+const validationErrorResponse = (errors) => ({
+    code: "VALIDATION_ERROR",
+    message: "Please correct the highlighted fields and try again.",
+    errors,
+});
 const createHttpError = (statusCode, responseBody) => {
     const error = new Error("Request failed");
     error.statusCode = statusCode;
@@ -112,14 +117,11 @@ describe("CMS admin term routes", () => {
             .send({ taxonomy: "series" });
 
         expect(res.statusCode).toEqual(400);
-        expect(res.body).toEqual({
-            message: "Validation failed",
-            errors: [
-                { field: "taxonomy", message: "Taxonomy must be category or tag" },
-                { field: "name", message: "Name is required" },
-                { field: "slug", message: "Slug is required" },
-            ],
-        });
+        expect(res.body).toEqual(validationErrorResponse([
+            { field: "taxonomy", message: "Taxonomy must be category or tag" },
+            { field: "name", message: "Name is required" },
+            { field: "slug", message: "Slug is required" },
+        ]));
         expect(termService.createTerm).not.toHaveBeenCalled();
     });
 
@@ -197,10 +199,9 @@ describe("CMS admin term routes", () => {
             .send({ termIds: [""] });
 
         expect(res.statusCode).toEqual(400);
-        expect(res.body).toEqual({
-            message: "Validation failed",
-            errors: [{ field: "termIds", message: "Term ids must be integers" }],
-        });
+        expect(res.body).toEqual(validationErrorResponse([
+            { field: "termIds", message: "Term ids must be integers" },
+        ]));
         expect(termService.replacePostTerms).not.toHaveBeenCalled();
     });
 });
@@ -236,6 +237,9 @@ describe("CMS public term routes", () => {
         const res = await request(createTestApp()).get("/api/cms/public/terms/category/missing/posts");
 
         expect(res.statusCode).toEqual(404);
-        expect(res.body).toEqual({ message: "CMS term not found." });
+        expect(res.body).toEqual({
+            code: "NOT_FOUND",
+            message: "CMS term not found.",
+        });
     });
 });

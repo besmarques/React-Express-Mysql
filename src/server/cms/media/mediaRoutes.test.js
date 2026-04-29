@@ -23,6 +23,11 @@ const createApp = require("../../app");
 const mediaService = require("./mediaService");
 
 const originalCmsEnabled = process.env.CMS_ENABLED;
+const validationErrorResponse = (errors) => ({
+    code: "VALIDATION_ERROR",
+    message: "Please correct the highlighted fields and try again.",
+    errors,
+});
 const createHttpError = (statusCode, responseBody) => {
     const error = new Error("Request failed");
     error.statusCode = statusCode;
@@ -108,13 +113,10 @@ describe("CMS admin media routes", () => {
             .send({ mimeType: "image/png" });
 
         expect(res.statusCode).toEqual(400);
-        expect(res.body).toEqual({
-            message: "Validation failed",
-            errors: [
-                { field: "originalName", message: "Original name is required" },
-                { field: "data", message: "File data is required" },
-            ],
-        });
+        expect(res.body).toEqual(validationErrorResponse([
+            { field: "originalName", message: "Original name is required" },
+            { field: "data", message: "File data is required" },
+        ]));
         expect(mediaService.uploadMedia).not.toHaveBeenCalled();
     });
 
@@ -172,6 +174,9 @@ describe("CMS admin media routes", () => {
             .set("Cookie", "token=valid-token");
 
         expect(res.statusCode).toEqual(404);
-        expect(res.body).toEqual({ message: "CMS media not found." });
+        expect(res.body).toEqual({
+            code: "NOT_FOUND",
+            message: "CMS media not found.",
+        });
     });
 });

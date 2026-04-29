@@ -136,6 +136,43 @@ const listPublicMenuItems = async (menuId) => {
     return items;
 };
 
+const listMenuItemTargets = async (itemType) => {
+    if (itemType === "page" || itemType === "post") {
+        const [items] = await connections.execute(
+            `SELECT
+                id,
+                title AS label,
+                slug,
+                status
+             FROM cms_posts
+             WHERE type = ?
+             ORDER BY title ASC, id ASC`,
+            [itemType]
+        );
+
+        return items;
+    }
+
+    if (itemType === "category" || itemType === "tag") {
+        const taxonomy = itemType === "category" ? "category" : "tag";
+        const [items] = await connections.execute(
+            `SELECT
+                id,
+                name AS label,
+                slug,
+                taxonomy
+             FROM cms_terms
+             WHERE taxonomy = ?
+             ORDER BY name ASC, id ASC`,
+            [taxonomy]
+        );
+
+        return items;
+    }
+
+    return [];
+};
+
 const findMenuItemById = async (menuId, itemId) => {
     const [items] = await connections.execute(
         `SELECT ${menuItemFields}
@@ -222,6 +259,7 @@ module.exports = {
     findMenuByLocation,
     findMenuItemById,
     listMenuItems,
+    listMenuItemTargets,
     listMenus,
     listPublicMenuItems,
     updateMenu,

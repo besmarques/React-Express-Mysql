@@ -1,12 +1,9 @@
+const { sendValidationError } = require("../../config/errorResponses");
+
 const allowedTaxonomies = new Set(["category", "tag"]);
 
 const isPresent = (value) => value !== undefined && value !== null && String(value).trim().length > 0;
 const isIntegerLike = (value) => isPresent(value) && Number.isInteger(Number(value));
-
-const sendValidationError = (res, errors) => res.status(400).json({
-    message: "Validation failed",
-    errors,
-});
 
 const validateTermPayload = ({ requireRequiredFields }) => (req, res, next) => {
     const errors = [];

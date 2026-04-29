@@ -1,15 +1,9 @@
 const crypto = require("crypto");
 const fs = require("fs/promises");
 const path = require("path");
+const { createHttpError } = require("../../config/errorResponses");
 const { getMediaConfig } = require("./mediaConfig");
 const mediaRepository = require("./mediaRepository");
-
-const createHttpError = (statusCode, responseBody, message) => {
-    const error = new Error(message || responseBody.message || responseBody);
-    error.statusCode = statusCode;
-    error.responseBody = responseBody;
-    return error;
-};
 
 const sanitizeFilename = (filename) => {
     const parsed = path.parse(filename || "upload");

@@ -1,6 +1,6 @@
 import React from 'react';
 
-import Navbar from "../components/Navbar";
+import AppNavbar from "../components/AppNavbar";
 import Sidebar from "../components/Sidebar";
 import Footer from "../components/Footer";
 
@@ -13,7 +13,7 @@ const FullLayout = ({ children }) => (
             <Sidebar />
         </aside>
         <div className="d-flex flex-column h-100 overflow-hidden flex-grow-1">
-            <Navbar />
+            <AppNavbar />
             <main className="flex-grow-1 overflow-auto px-3 py-2" style={{ minHeight: 0 }}>
                 {children}
             </main>

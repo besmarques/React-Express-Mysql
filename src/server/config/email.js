@@ -11,7 +11,10 @@ const parseBoolean = (value, fallback = false) => {
 const createEmailConfigError = () => {
     const error = new Error("Email service is not configured");
     error.statusCode = 503;
-    error.responseBody = { message: "Email service is not configured." };
+    error.responseBody = {
+        code: "EMAIL_NOT_CONFIGURED",
+        message: "Email sending is not configured for this app yet.",
+    };
     return error;
 };
 

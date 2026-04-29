@@ -23,6 +23,11 @@ const request = require("supertest");
 const jwt = require("jsonwebtoken");
 const createApp = require("../app");
 const userService = require("./userService");
+const validationErrorResponse = (errors) => ({
+    code: "VALIDATION_ERROR",
+    message: "Please correct the highlighted fields and try again.",
+    errors,
+});
 
 const createHttpError = (statusCode, responseBody) => {
     const error = new Error("Request failed");
@@ -99,19 +104,31 @@ describe("GET /api/users", () => {
 
 describe('POST /api/login', () => {
     it('should return 401 Bad Request if no user with that email is found', async () => {
-        userService.loginUser.mockRejectedValue(createHttpError(401, 'Invalid email or password'));
+        userService.loginUser.mockRejectedValue(createHttpError(401, {
+            code: 'AUTH_INVALID_CREDENTIALS',
+            message: 'Email or password is incorrect.',
+        }));
 
         const res = await request(app).post('/api/login').send({ email: 'nonexistent@example.com', password: 'password' });
         expect(res.statusCode).toEqual(401);
-        expect(res.body).toEqual('Invalid email or password');
+        expect(res.body).toEqual({
+            code: 'AUTH_INVALID_CREDENTIALS',
+            message: 'Email or password is incorrect.',
+        });
     });
 
     it('should return 401 Unauthorized if the password is incorrect', async () => {
-        userService.loginUser.mockRejectedValue(createHttpError(401, 'Invalid email or password'));
+        userService.loginUser.mockRejectedValue(createHttpError(401, {
+            code: 'AUTH_INVALID_CREDENTIALS',
+            message: 'Email or password is incorrect.',
+        }));
 
         const res = await request(app).post('/api/login').send({ email: 'admin@example.com', password: 'wrongpassword' });
         expect(res.statusCode).toEqual(401);
-        expect(res.body).toEqual('Invalid email or password');
+        expect(res.body).toEqual({
+            code: 'AUTH_INVALID_CREDENTIALS',
+            message: 'Email or password is incorrect.',
+        });
     });
 
     it('should return 200 OK and a token if the email and password are correct', async () => {
@@ -127,10 +144,9 @@ describe('POST /api/login', () => {
         const res = await request(app).post('/api/login').send({ email: 'invalid', password: 'password' });
 
         expect(res.statusCode).toEqual(400);
-        expect(res.body).toEqual({
-            message: 'Validation failed',
-            errors: [{ field: 'email', message: 'Email must be valid' }],
-        });
+        expect(res.body).toEqual(validationErrorResponse([
+            { field: 'email', message: 'Email must be valid' },
+        ]));
         expect(userService.loginUser).not.toHaveBeenCalled();
     });
 });
@@ -141,25 +157,30 @@ describe('POST /api/signup', () => {
 
         const res = await request(app).post('/api/signup').send({ email: 'test@test.com', password: 'Password1' });
         expect(res.statusCode).toEqual(201);
-        expect(res.body).toEqual('User created');
+        expect(res.body).toEqual({ message: 'User created' });
     });
 
     it('should return 400 and "User with that email already exists" if the email is already in use', async () => {
-        userService.signupUser.mockRejectedValue(createHttpError(400, 'User with that email already exists'));
+        userService.signupUser.mockRejectedValue(createHttpError(400, {
+            code: 'USER_EMAIL_EXISTS',
+            message: 'An account with this email already exists.',
+        }));
 
         const res = await request(app).post('/api/signup').send({ email: 'admin@example.com', password: 'Password1' });
         expect(res.statusCode).toEqual(400);
-        expect(res.body).toEqual('User with that email already exists');
+        expect(res.body).toEqual({
+            code: 'USER_EMAIL_EXISTS',
+            message: 'An account with this email already exists.',
+        });
     });
 
     it('should return 400 before the service is called if the password is missing', async () => {
         const res = await request(app).post('/api/signup').send({ email: 'test@test.com' });
 
         expect(res.statusCode).toEqual(400);
-        expect(res.body).toEqual({
-            message: 'Validation failed',
-            errors: [{ field: 'password', message: 'Password is required' }],
-        });
+        expect(res.body).toEqual(validationErrorResponse([
+            { field: 'password', message: 'Password is required' },
+        ]));
         expect(userService.signupUser).not.toHaveBeenCalled();
     });
 
@@ -167,10 +188,9 @@ describe('POST /api/signup', () => {
         const res = await request(app).post('/api/signup').send({ email: 'test@test.com', password: 'password' });
 
         expect(res.statusCode).toEqual(400);
-        expect(res.body).toEqual({
-            message: 'Validation failed',
-            errors: [{ field: 'password', message: passwordPolicyMessage }],
-        });
+        expect(res.body).toEqual(validationErrorResponse([
+            { field: 'password', message: passwordPolicyMessage },
+        ]));
         expect(userService.signupUser).not.toHaveBeenCalled();
     });
 });
@@ -190,6 +210,9 @@ describe('POST /api/forgot-password', () => {
         const res = await request(app).post('/api/forgot-password').send({ email: 'invalid' });
 
         expect(res.statusCode).toEqual(400);
+        expect(res.body).toEqual(validationErrorResponse([
+            { field: 'email', message: 'Email must be valid' },
+        ]));
         expect(userService.sendPasswordReset).not.toHaveBeenCalled();
     });
 });
@@ -209,9 +232,12 @@ describe('POST /api/reset-password', () => {
     });
 
     it('should return 400 before the service is called if the reset token is missing', async () => {
-        const res = await request(app).post('/api/reset-password').send({ newPassword: 'new-password' });
+        const res = await request(app).post('/api/reset-password').send({ newPassword: 'NewPassword1' });
 
         expect(res.statusCode).toEqual(400);
+        expect(res.body).toEqual(validationErrorResponse([
+            { field: 'resetToken', message: 'Reset token is required' },
+        ]));
         expect(userService.resetPassword).not.toHaveBeenCalled();
     });
 
@@ -222,10 +248,9 @@ describe('POST /api/reset-password', () => {
         });
 
         expect(res.statusCode).toEqual(400);
-        expect(res.body).toEqual({
-            message: 'Validation failed',
-            errors: [{ field: 'newPassword', message: passwordPolicyMessage }],
-        });
+        expect(res.body).toEqual(validationErrorResponse([
+            { field: 'newPassword', message: passwordPolicyMessage },
+        ]));
         expect(userService.resetPassword).not.toHaveBeenCalled();
     });
 });

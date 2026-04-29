@@ -1,7 +1,6 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
-import CmsAdminLayout from "./CmsAdminLayout";
-import { slugify } from "../editor/markdown";
+import { slugify } from "../../editor/markdown";
 import getApiErrorMessage from "../../utils/apiErrors";
 
 const emptyForm = {
@@ -106,7 +105,7 @@ const CmsTermManager = () => {
     };
 
     return (
-        <CmsAdminLayout>
+        <>
             <div className="d-flex align-items-center justify-content-between mb-3">
                 <h2 className="h4 mb-0">Categories and tags</h2>
             </div>
@@ -195,7 +194,7 @@ const CmsTermManager = () => {
                     )}
                 </div>
             </div>
-        </CmsAdminLayout>
+        </>
     );
 };
 

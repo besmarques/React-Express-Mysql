@@ -1,9 +1,6 @@
-const isPresent = (value) => value !== undefined && value !== null && String(value).trim().length > 0;
+const { sendValidationError } = require("../../config/errorResponses");
 
-const sendValidationError = (res, errors) => res.status(400).json({
-    message: "Validation failed",
-    errors,
-});
+const isPresent = (value) => value !== undefined && value !== null && String(value).trim().length > 0;
 
 const validateUploadMedia = (req, res, next) => {
     const errors = [];

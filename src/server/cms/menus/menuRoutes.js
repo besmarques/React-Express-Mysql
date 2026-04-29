@@ -10,6 +10,7 @@ const router = express.Router();
 router.get("/public/menus/:location", menuController.getPublicMenuByLocation);
 
 router.get("/menus", authenticateJWT, authorizePermission(permissions.cmsMenusManage), menuController.getMenus);
+router.get("/menus/item-targets", authenticateJWT, authorizePermission(permissions.cmsMenusManage), menuController.getMenuItemTargets);
 router.get("/menus/:id", authenticateJWT, authorizePermission(permissions.cmsMenusManage), menuController.getMenuById);
 router.post("/menus", authenticateJWT, authorizePermission(permissions.cmsMenusManage), menuValidation.validateCreateMenu, menuController.createMenu);
 router.put("/menus/:id", authenticateJWT, authorizePermission(permissions.cmsMenusManage), menuValidation.validateUpdateMenu, menuController.updateMenu);

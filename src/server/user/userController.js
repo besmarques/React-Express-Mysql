@@ -1,24 +1,7 @@
 const logger = require("../config/logger");
+const { sendControllerError } = require("../config/errorResponses");
 const { sessionClearCookieOptions, tokenCookieOptions } = require("../config/cookieOptions");
 const userService = require("./userService");
-
-const logServerError = (err) => {
-    if (err.errno || err.code || err.sqlMessage) {
-        logger.error(`${err.errno} - ${err.code} - ${err.sqlMessage}`);
-        return;
-    }
-
-    logger.error(err);
-};
-
-const sendError = (res, err) => {
-    if (err.statusCode) {
-        return res.status(err.statusCode).json(err.responseBody);
-    }
-
-    logServerError(err);
-    return res.status(500).send("Server error");
-};
 
 const getUsers = async (req, res) => {
     try {
@@ -26,7 +9,10 @@ const getUsers = async (req, res) => {
         logger.info("Get users completed successfully");
         return res.json(users);
     } catch (err) {
-        return sendError(res, err);
+        return sendControllerError(res, logger, err, {
+            code: "USER_LIST_FAILED",
+            message: "Unable to load users right now.",
+        });
     }
 };
 
@@ -42,7 +28,10 @@ const login = async (req, res) => {
 
         return res.json({ message: "Logged in" });
     } catch (err) {
-        return sendError(res, err);
+        return sendControllerError(res, logger, err, {
+            code: "LOGIN_FAILED",
+            message: "Unable to log in right now.",
+        });
     }
 };
 
@@ -51,9 +40,12 @@ const signup = async (req, res) => {
 
     try {
         await userService.signupUser(email, password);
-        return res.status(201).json("User created");
+        return res.status(201).json({ message: "User created" });
     } catch (err) {
-        return sendError(res, err);
+        return sendControllerError(res, logger, err, {
+            code: "SIGNUP_FAILED",
+            message: "Unable to create this account right now.",
+        });
     }
 };
 
@@ -64,7 +56,10 @@ const forgotPassword = async (req, res) => {
         await userService.sendPasswordReset(email);
         return res.status(200).json({ message: "Password reset link sent to email." });
     } catch (err) {
-        return sendError(res, err);
+        return sendControllerError(res, logger, err, {
+            code: "PASSWORD_RESET_REQUEST_FAILED",
+            message: "Unable to send a password reset link right now.",
+        });
     }
 };
 
@@ -75,7 +70,10 @@ const resetPassword = async (req, res) => {
         await userService.resetPassword(resetToken, newPassword);
         return res.status(200).json({ message: "Password has been reset." });
     } catch (err) {
-        return sendError(res, err);
+        return sendControllerError(res, logger, err, {
+            code: "PASSWORD_RESET_FAILED",
+            message: "Unable to reset the password right now.",
+        });
     }
 };
 
@@ -97,8 +95,10 @@ const logout = (req, res) => {
 
     req.session.destroy((err) => {
         if (err) {
-            logger.error("Error destroying session:", err);
-            return res.status(500).send("Server error");
+            return sendControllerError(res, logger, err, {
+                code: "LOGOUT_FAILED",
+                message: "Unable to log out right now.",
+            });
         }
 
         return sendLoggedOut();

@@ -1,15 +1,17 @@
 import React, { useContext } from 'react';
 import { Context } from "../store/appContext";
 import { Link, useNavigate } from 'react-router-dom';
+import { getSidebarNavigationItems } from "../modules/moduleRegistry";
 
 import CustomButton from '../components/Button';
 
 
 function Sidebar() {
 
-    const { actions } = useContext(Context); 
+    const { store, actions } = useContext(Context); 
 
     const navigate = useNavigate();
+    const moduleItems = getSidebarNavigationItems(store);
 
     const handleLogout = async () => {
         try {
@@ -28,6 +30,15 @@ function Sidebar() {
             <Link to="/status" className="block">
                 <CustomButton variant="contained" color="primary" name="Go to Status" />
             </Link>
+            {moduleItems.length > 0 && (
+                <div className="d-flex flex-column gap-2 mt-3">
+                    {moduleItems.map((item) => (
+                        <Link key={item.to} to={item.to} className="block">
+                            <CustomButton variant="contained" color="primary" name={item.label} />
+                        </Link>
+                    ))}
+                </div>
+            )}
             <CustomButton variant="contained" color="red" name="Logout" onClick={() => handleLogout()}/>
         </nav>
     );

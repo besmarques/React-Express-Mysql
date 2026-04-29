@@ -15,3 +15,52 @@ Lower priority
 --------------
 
 No open lower-priority issues.
+
+Platform and layout plan
+------------------------
+
+1. Completed:
+   - Added `PublicNavbar` for logged-out/public pages.
+   - Added `AppNavbar` for logged-in/admin pages.
+   - Stopped using the same navbar for both states.
+
+2. Split layouts by route type:
+   - Add `AuthLayout` for login/signup/reset-password.
+   - Add `PublicLayout` for public pages and CMS public rendering.
+   - Treat the current shared logged-in shell as `AppLayout`.
+
+3. Rework route groups:
+   - Separate auth routes, public routes, app routes, CMS public routes, and CMS admin routes.
+   - Stop relying on one flat route list without shell boundaries.
+
+4. Make CMS a platform section instead of a side app:
+   - Treat CMS as the content area of the platform.
+   - Keep it inside the shared logged-in admin shell.
+   - Revisit frontend naming from `cms` to `content` after the shell split is stable.
+
+5. Define the post-login home explicitly:
+   - Decide whether `/` is public-first or app-first.
+   - Avoid implicit competition between app home and CMS public routes.
+
+6. Add shared admin page chrome:
+   - Create one reusable admin page header pattern for title, actions, back link, and optional tabs/breadcrumbs.
+   - Reuse it across CMS, settings, users, and future modules.
+
+7. Strengthen the module contract:
+   - Let modules declare route group, shell, sidebar items, permissions, and public navigation contribution.
+   - Make route ownership and layout ownership explicit.
+
+8. Clean the client structure after the shell split:
+   - Group navigation components under `src/client/components/navigation/`.
+   - Standardize layouts under `src/client/layouts/`.
+   - Only rename `cms` to `content` after the platform structure is stable.
+
+Recommended implementation order
+--------------------------------
+
+1. Introduce `AuthLayout`, `PublicLayout`, and `AppLayout`.
+2. Reassign core and CMS routes to the correct shells.
+3. Make CMS public rendering use the public shell.
+4. Reframe CMS in the sidebar as a content section.
+5. Add shared admin page chrome.
+6. Revisit frontend route naming if `content` becomes the preferred product language.

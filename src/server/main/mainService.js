@@ -8,6 +8,7 @@ const getClientEnv = () => ({
     CMS_ENABLED: isCmsEnabled(),
     CMS_THEME: process.env.CMS_THEME || "default",
     REACT_APP_BASENAME: process.env.REACT_APP_BASENAME,
+    REACT_APP_NAME: process.env.REACT_APP_NAME,
     REACT_APP_STATUS_MESSAGE: process.env.REACT_APP_STATUS_MESSAGE,
 });
 

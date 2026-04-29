@@ -1,15 +1,9 @@
+const { createHttpError } = require("../../config/errorResponses");
 const postRepository = require("./postRepository");
 const { permissions } = require("../permissions/permissionConstants");
 
 const allowedTypes = new Set(["post", "page"]);
 const allowedStatuses = new Set(["draft", "published", "private", "trash"]);
-
-const createHttpError = (statusCode, responseBody, message) => {
-    const error = new Error(message || responseBody.message || responseBody);
-    error.statusCode = statusCode;
-    error.responseBody = responseBody;
-    return error;
-};
 
 const normalizePostInput = (payload, fallback = {}) => ({
     type: payload.type || fallback.type || "post",

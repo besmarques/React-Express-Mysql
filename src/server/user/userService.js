@@ -2,6 +2,7 @@ const bcrypt = require("bcrypt");
 const crypto = require("crypto");
 const jwt = require("jsonwebtoken");
 const emailService = require("../config/email");
+const { createHttpError } = require("../config/errorResponses");
 const userRepository = require("./userRepository");
 
 const secretKey = process.env.JWT_SECRET;
@@ -10,15 +11,11 @@ const adminEmail = process.env.ADMIN_EMAIL;
 const publicAppUrl = (process.env.APP_PUBLIC_URL || '').replace(/\/+$/, '');
 const resetTokenLifetimeMs = 60 * 60 * 1000;
 
-const createHttpError = (statusCode, responseBody, message) => {
-    const error = new Error(message || responseBody);
-    error.statusCode = statusCode;
-    error.responseBody = responseBody;
-    return error;
-};
-
 const getUsers = async () => userRepository.getUsers();
-const invalidLoginResponse = "Invalid email or password";
+const invalidLoginResponse = {
+    code: "AUTH_INVALID_CREDENTIALS",
+    message: "Email or password is incorrect.",
+};
 
 const hashResetToken = (resetToken) => crypto
     .createHash("sha256")
@@ -54,7 +51,10 @@ const signupUser = async (email, password) => {
     const existingUser = await userRepository.findByEmail(email);
 
     if (existingUser) {
-        throw createHttpError(400, "User with that email already exists");
+        throw createHttpError(400, {
+            code: "USER_EMAIL_EXISTS",
+            message: "An account with this email already exists.",
+        });
     }
 
     const hashedPassword = await bcrypt.hash(password, 10);
@@ -63,7 +63,10 @@ const signupUser = async (email, password) => {
 
 const sendPasswordReset = async (email) => {
     if (email === adminEmail) {
-        throw createHttpError(400, { message: "Cannot reset password for this user." });
+        throw createHttpError(400, {
+            code: "PASSWORD_RESET_UNAVAILABLE",
+            message: "Password reset is not available for this account.",
+        });
     }
 
     const resetToken = crypto.randomBytes(32).toString("hex");
@@ -90,14 +93,20 @@ const resetPassword = async (resetToken, newPassword) => {
     const user = await userRepository.findByResetToken(resetTokenHash);
 
     if (!user) {
-        throw createHttpError(400, { message: "Invalid or expired reset token." });
+        throw createHttpError(400, {
+            code: "PASSWORD_RESET_TOKEN_INVALID",
+            message: "This password reset link is invalid or has expired.",
+        });
     }
 
     const hashedPassword = await bcrypt.hash(newPassword, 10);
     const updateResult = await userRepository.updatePasswordByResetToken(user.id, resetTokenHash, hashedPassword);
 
     if (!updateResult || updateResult.affectedRows === 0) {
-        throw createHttpError(400, { message: "Invalid or expired reset token." });
+        throw createHttpError(400, {
+            code: "PASSWORD_RESET_TOKEN_INVALID",
+            message: "This password reset link is invalid or has expired.",
+        });
     }
 };
 

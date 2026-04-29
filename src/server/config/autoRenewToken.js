@@ -31,7 +31,10 @@ const autoRenewToken = (req, res, next) => {
                     return next();
                 }
 
-                return res.status(401).json({ message: 'Unauthorized: Invalid token' });
+                return res.status(401).json({
+                    code: 'AUTH_TOKEN_INVALID',
+                    message: 'Your session is invalid or has expired. Please log in again.',
+                });
             }
 
             const currentTime = Date.now().valueOf() / 1000;

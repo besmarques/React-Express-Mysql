@@ -1,3 +1,5 @@
+const { sendValidationError } = require("../config/errorResponses");
+
 const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const passwordPolicy = {
     minLength: 8,
@@ -6,13 +8,6 @@ const passwordPolicy = {
 };
 
 const isNonEmptyString = (value) => typeof value === "string" && value.trim().length > 0;
-
-const sendValidationError = (res, errors) => (
-    res.status(400).json({
-        message: "Validation failed",
-        errors,
-    })
-);
 
 const validateEmail = (email, errors) => {
     if (!isNonEmptyString(email)) {

@@ -7,6 +7,7 @@ jest.mock("./menuRepository", () => ({
     findMenuByLocation: jest.fn(),
     findMenuItemById: jest.fn(),
     listMenuItems: jest.fn(),
+    listMenuItemTargets: jest.fn(),
     listMenus: jest.fn(),
     listPublicMenuItems: jest.fn(),
     updateMenu: jest.fn(),
@@ -66,6 +67,21 @@ describe("menuService menus", () => {
                 statusCode: 404,
                 responseBody: { message: "CMS menu not found." },
             });
+    });
+
+    it("lists available targets for page menu items", async () => {
+        const targets = [{ id: 1, label: "Home", slug: "home", status: "published" }];
+        menuRepository.listMenuItemTargets.mockResolvedValue(targets);
+
+        await expect(menuService.getMenuItemTargets("page")).resolves.toEqual(targets);
+
+        expect(menuRepository.listMenuItemTargets).toHaveBeenCalledWith("page");
+    });
+
+    it("returns an empty list for custom menu item targets", async () => {
+        await expect(menuService.getMenuItemTargets("custom")).resolves.toEqual([]);
+
+        expect(menuRepository.listMenuItemTargets).not.toHaveBeenCalled();
     });
 });
 

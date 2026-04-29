@@ -15,6 +15,7 @@ jest.mock("./menuService", () => ({
     deleteMenu: jest.fn(),
     deleteMenuItem: jest.fn(),
     getMenuItems: jest.fn(),
+    getMenuItemTargets: jest.fn(),
     getMenuWithItems: jest.fn(),
     getMenus: jest.fn(),
     getPublicMenuByLocation: jest.fn(),
@@ -28,6 +29,11 @@ const createApp = require("../../app");
 const menuService = require("./menuService");
 
 const originalCmsEnabled = process.env.CMS_ENABLED;
+const validationErrorResponse = (errors) => ({
+    code: "VALIDATION_ERROR",
+    message: "Please correct the highlighted fields and try again.",
+    errors,
+});
 const createHttpError = (statusCode, responseBody) => {
     const error = new Error("Request failed");
     error.statusCode = statusCode;
@@ -105,6 +111,19 @@ describe("CMS admin menu routes", () => {
         expect(res.body).toEqual(menus);
     });
 
+    it("returns menu item targets to admins", async () => {
+        const targets = [{ id: 1, label: "Home", slug: "home", status: "published" }];
+        menuService.getMenuItemTargets.mockResolvedValue(targets);
+
+        const res = await request(createTestApp())
+            .get("/api/cms/menus/item-targets?itemType=page")
+            .set("Cookie", "token=valid-token");
+
+        expect(res.statusCode).toEqual(200);
+        expect(res.body).toEqual(targets);
+        expect(menuService.getMenuItemTargets).toHaveBeenCalledWith("page");
+    });
+
     it("rejects invalid create payloads before calling the service", async () => {
         const res = await request(createTestApp())
             .post("/api/cms/menus")
@@ -112,13 +131,10 @@ describe("CMS admin menu routes", () => {
             .send({ slug: "" });
 
         expect(res.statusCode).toEqual(400);
-        expect(res.body).toEqual({
-            message: "Validation failed",
-            errors: [
-                { field: "name", message: "Name is required" },
-                { field: "slug", message: "Slug is required" },
-            ],
-        });
+        expect(res.body).toEqual(validationErrorResponse([
+            { field: "name", message: "Name is required" },
+            { field: "slug", message: "Slug is required" },
+        ]));
         expect(menuService.createMenu).not.toHaveBeenCalled();
     });
 
@@ -184,14 +200,11 @@ describe("CMS admin menu item routes", () => {
             .send({ itemType: "unknown", sortOrder: "x" });
 
         expect(res.statusCode).toEqual(400);
-        expect(res.body).toEqual({
-            message: "Validation failed",
-            errors: [
-                { field: "label", message: "Label is required" },
-                { field: "itemType", message: "Item type must be custom, page, post, category, or tag" },
-                { field: "sortOrder", message: "Sort order must be an integer" },
-            ],
-        });
+        expect(res.body).toEqual(validationErrorResponse([
+            { field: "label", message: "Label is required" },
+            { field: "itemType", message: "Item type must be custom, page, post, category, or tag" },
+            { field: "sortOrder", message: "Sort order must be an integer" },
+        ]));
         expect(menuService.createMenuItem).not.toHaveBeenCalled();
     });
 
@@ -261,6 +274,9 @@ describe("CMS public menu routes", () => {
         const res = await request(createTestApp()).get("/api/cms/public/menus/missing");
 
         expect(res.statusCode).toEqual(404);
-        expect(res.body).toEqual({ message: "CMS menu not found." });
+        expect(res.body).toEqual({
+            code: "NOT_FOUND",
+            message: "CMS menu not found.",
+        });
     });
 });

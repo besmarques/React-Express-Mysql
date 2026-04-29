@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
 import { Link } from "react-router-dom";
-import CmsAdminLayout from "./CmsAdminLayout";
+import getCmsPublicPath from "../contentPaths";
 import getApiErrorMessage from "../../utils/apiErrors";
 
 const labels = {
@@ -59,7 +59,7 @@ const CmsPostList = ({ type }) => {
     };
 
     return (
-        <CmsAdminLayout>
+        <>
             <div className="d-flex align-items-center justify-content-between mb-3">
                 <h2 className="h4 mb-0">{copy.plural}</h2>
                 <Link to={copy.newPath} className="btn btn-primary">New {copy.singular.toLowerCase()}</Link>
@@ -92,6 +92,16 @@ const CmsPostList = ({ type }) => {
                                     <td>{post.status}</td>
                                     <td>{post.publishedAt || "-"}</td>
                                     <td className="text-end">
+                                        {post.status === "published" && getCmsPublicPath(type, post.slug) && (
+                                            <Link
+                                                to={getCmsPublicPath(type, post.slug)}
+                                                className="btn btn-sm btn-outline-secondary me-2"
+                                                target="_blank"
+                                                rel="noreferrer"
+                                            >
+                                                View
+                                            </Link>
+                                        )}
                                         <Link
                                             to={`/admin/cms/${type === "page" ? "pages" : "posts"}/${post.id}`}
                                             className="btn btn-sm btn-outline-primary me-2"
@@ -121,7 +131,7 @@ const CmsPostList = ({ type }) => {
                     </table>
                 </div>
             )}
-        </CmsAdminLayout>
+        </>
     );
 };
 

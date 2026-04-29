@@ -84,7 +84,10 @@ describe("userService password reset", () => {
             .rejects
             .toMatchObject({
                 statusCode: 400,
-                responseBody: { message: "Invalid or expired reset token." },
+                responseBody: {
+                    code: "PASSWORD_RESET_TOKEN_INVALID",
+                    message: "This password reset link is invalid or has expired.",
+                },
             });
     });
 });
@@ -95,14 +98,26 @@ describe("userService login", () => {
 
         await expect(userService.loginUser("missing@example.com", "password"))
             .rejects
-            .toMatchObject({ statusCode: 401, responseBody: "Invalid email or password" });
+            .toMatchObject({
+                statusCode: 401,
+                responseBody: {
+                    code: "AUTH_INVALID_CREDENTIALS",
+                    message: "Email or password is incorrect.",
+                },
+            });
 
         userRepository.findByEmail.mockResolvedValueOnce({ id: 1, email: "user@example.com", password: "hash", is_admin: 0 });
         require("bcrypt").compare.mockResolvedValueOnce(false);
 
         await expect(userService.loginUser("user@example.com", "wrong-password"))
             .rejects
-            .toMatchObject({ statusCode: 401, responseBody: "Invalid email or password" });
+            .toMatchObject({
+                statusCode: 401,
+                responseBody: {
+                    code: "AUTH_INVALID_CREDENTIALS",
+                    message: "Email or password is incorrect.",
+                },
+            });
     });
 
     it("includes role permissions in the issued token payload", async () => {

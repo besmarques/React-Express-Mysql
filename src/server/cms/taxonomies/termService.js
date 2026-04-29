@@ -1,14 +1,8 @@
+const { createHttpError } = require("../../config/errorResponses");
 const postRepository = require("../posts/postRepository");
 const termRepository = require("./termRepository");
 
 const allowedTaxonomies = new Set(["category", "tag"]);
-
-const createHttpError = (statusCode, responseBody, message) => {
-    const error = new Error(message || responseBody.message || responseBody);
-    error.statusCode = statusCode;
-    error.responseBody = responseBody;
-    return error;
-};
 
 const normalizeTermInput = (payload, fallback = {}) => ({
     taxonomy: payload.taxonomy !== undefined ? payload.taxonomy : fallback.taxonomy,

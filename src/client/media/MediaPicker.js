@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
-import getApiErrorMessage from "../../utils/apiErrors";
+import getApiErrorMessage from "../utils/apiErrors";
 
 const isImage = (media) => media.mimeType && media.mimeType.startsWith("image/");
 

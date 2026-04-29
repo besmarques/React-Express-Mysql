@@ -23,7 +23,10 @@ const createApp = ({ sessionMiddleware, staticRoot = __dirname } = {}) => {
   registerEnabledModules(app);
 
   app.use('/api', (req, res) => {
-    res.status(404).json({ message: 'API route not found' });
+    res.status(404).json({
+      code: 'API_ROUTE_NOT_FOUND',
+      message: 'The requested API route was not found.',
+    });
   });
 
   app.use(express.static(path.join(staticRoot, 'public')));

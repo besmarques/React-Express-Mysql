@@ -2,14 +2,19 @@ import React, { useContext } from "react";
 import { Navigate } from "react-router-dom";
 import { Context } from "../store/appContext";
 
-const CmsEnabledWrapper = ({ children, fallback = null, redirectPath = "/admin" }) => {
+const FeatureEnabledWrapper = ({
+    children,
+    fallback = null,
+    redirectPath = "/admin",
+    featureFlag,
+}) => {
     const { store } = useContext(Context);
 
     if (store.isEnvLoading) {
         return <div>Loading...</div>;
     }
 
-    if (!store.cmsEnabled) {
+    if (!featureFlag || !store[featureFlag]) {
         if (fallback) {
             return fallback;
         }
@@ -20,4 +25,4 @@ const CmsEnabledWrapper = ({ children, fallback = null, redirectPath = "/admin" 
     return children;
 };
 
-export default CmsEnabledWrapper;
+export default FeatureEnabledWrapper;

@@ -1,11 +1,14 @@
-import React, { useEffect, useState } from "react";
+import React, { useContext, useEffect, useRef, useState } from "react";
 import axios from "axios";
 import { Link, useNavigate, useParams } from "react-router-dom";
-import CmsAdminLayout from "./CmsAdminLayout";
-import MediaPicker from "../media/MediaPicker";
-import { renderMarkdownToHtml, slugify } from "../editor/markdown";
+import GrapesPageEditor from "../../editor/GrapesPageEditor";
+import MediaPicker from "../../media/MediaPicker";
+import RichTextEditor from "../../editor/RichTextEditor";
+import { renderMarkdownToHtml, slugify } from "../../editor/markdown";
+import getCmsPublicPath from "../contentPaths";
 import { pageTemplateOptions } from "../themes/themeRegistry";
 import getApiErrorMessage from "../../utils/apiErrors";
+import { Context } from "../../store/appContext";
 
 const getBackPath = (type) => `/admin/cms/${type === "page" ? "pages" : "posts"}`;
 
@@ -15,8 +18,14 @@ const emptyForm = (type) => ({
     title: "",
     slug: "",
     template: "default",
+    useVisualBuilder: type === "page",
     excerpt: "",
-    contentMarkdown: "",
+    richTextHtml: "",
+    pageContent: {
+        css: "",
+        html: "",
+    },
+    pageHtml: "",
     menuOrder: 0,
     publishedAt: "",
 });
@@ -31,7 +40,13 @@ const taxonomyLabels = {
     tag: "Tags",
 };
 
+const canManageTaxonomies = (store) => (
+    Boolean(store?.isAdmin)
+    || Boolean(Array.isArray(store?.permissions) && store.permissions.includes("cms.taxonomies.manage"))
+);
+
 const CmsPostEditor = ({ type }) => {
+    const { store } = useContext(Context);
     const { id } = useParams();
     const navigate = useNavigate();
     const isEditing = Boolean(id);
@@ -46,17 +61,33 @@ const CmsPostEditor = ({ type }) => {
     const [availableTerms, setAvailableTerms] = useState(emptyTerms);
     const [selectedTermIds, setSelectedTermIds] = useState([]);
     const [isMediaPickerOpen, setIsMediaPickerOpen] = useState(false);
+    const richTextEditorRef = useRef(null);
+    const hasTaxonomyAccess = canManageTaxonomies(store);
 
     const applyPostToForm = (post) => {
         const contentJson = post.contentJson || {};
+        const isGrapesPage = post.type === "page" && contentJson.format === "grapesjs";
+        const richTextHtml = contentJson.format === "tinymce" || contentJson.format === "tiptap"
+            ? (contentJson.html || post.contentHtml || "")
+            : renderMarkdownToHtml(contentJson.markdown || "");
+
         setForm({
             type: post.type,
             status: post.status,
             title: post.title || "",
             slug: post.slug || "",
             template: post.template || "default",
+            useVisualBuilder: isGrapesPage,
             excerpt: post.excerpt || "",
-            contentMarkdown: contentJson.markdown || "",
+            richTextHtml: isGrapesPage ? "" : richTextHtml,
+            pageContent: isGrapesPage ? {
+                css: contentJson.css || "",
+                html: contentJson.html || "",
+            } : {
+                css: "",
+                html: post.contentHtml || richTextHtml,
+            },
+            pageHtml: isGrapesPage ? (post.contentHtml || "") : "",
             menuOrder: post.menuOrder || 0,
             publishedAt: post.publishedAt || "",
         });
@@ -79,6 +110,12 @@ const CmsPostEditor = ({ type }) => {
     };
 
     const loadAvailableTerms = async () => {
+        if (!hasTaxonomyAccess) {
+            setAvailableTerms(emptyTerms);
+            setTermError(null);
+            return;
+        }
+
         try {
             const [categoryResponse, tagResponse] = await Promise.all([
                 axios.get("/api/cms/terms?taxonomy=category"),
@@ -96,8 +133,9 @@ const CmsPostEditor = ({ type }) => {
     };
 
     const loadAssignedTerms = async () => {
-        if (!isEditing) {
+        if (!isEditing || !hasTaxonomyAccess) {
             setSelectedTermIds([]);
+            setTermError(null);
             return;
         }
 
@@ -150,10 +188,19 @@ const CmsPostEditor = ({ type }) => {
         return () => {
             isMounted = false;
         };
-    }, [id, isEditing, type]);
+    }, [hasTaxonomyAccess, id, isEditing, type]);
 
     const handleChange = (event) => {
         const { name, value } = event.target;
+        if (name === "useVisualBuilder") {
+            const enabled = event.target.checked;
+            setForm({
+                ...form,
+                useVisualBuilder: enabled,
+            });
+            return;
+        }
+
         const updates = {
             [name]: name === "menuOrder" ? Number(value) : value,
         };
@@ -185,19 +232,32 @@ const CmsPostEditor = ({ type }) => {
     };
 
     const savePostTerms = async (postId) => {
+        if (!hasTaxonomyAccess) {
+            return;
+        }
+
+        if (!isEditing && selectedTermIds.length === 0) {
+            return;
+        }
+
         await axios.put(`/api/cms/posts/${postId}/terms`, {
             termIds: selectedTermIds,
         });
     };
 
     const handleSelectMedia = (media) => {
-        const markdown = media.mimeType && media.mimeType.startsWith("image/")
-            ? `![${media.altText || media.originalName}](${media.url})`
-            : `[${media.originalName}](${media.url})`;
+        if (form.type === "page") {
+            setError("Media insertion from the builder is not wired yet. Upload first, then use the asset URL inside the page builder.");
+            return;
+        }
 
-        setForm({
-            ...form,
-            contentMarkdown: `${form.contentMarkdown}${form.contentMarkdown ? "\n\n" : ""}${markdown}`,
+        const markdown = media.mimeType && media.mimeType.startsWith("image/")
+            ? media.url
+            : media.url;
+
+        richTextEditorRef.current?.insertMedia({
+            ...media,
+            url: markdown,
         });
         setIsMediaPickerOpen(false);
     };
@@ -208,15 +268,25 @@ const CmsPostEditor = ({ type }) => {
 
         const payload = {
             ...form,
-            contentJson: {
-                format: "markdown",
-                markdown: form.contentMarkdown,
-            },
-            contentHtml: renderMarkdownToHtml(form.contentMarkdown),
+            contentJson: form.type === "page" && form.useVisualBuilder
+                ? {
+                    format: "grapesjs",
+                    html: form.pageContent.html,
+                    css: form.pageContent.css,
+                }
+                : {
+                    format: "tinymce",
+                    html: form.richTextHtml,
+                },
+            contentHtml: form.type === "page" && form.useVisualBuilder
+                ? form.pageHtml
+                : form.richTextHtml,
             publishedAt: form.publishedAt || null,
             template: form.type === "page" ? form.template : null,
         };
-        delete payload.contentMarkdown;
+        delete payload.richTextHtml;
+        delete payload.pageContent;
+        delete payload.pageHtml;
 
         try {
             let savedPost;
@@ -253,6 +323,17 @@ const CmsPostEditor = ({ type }) => {
         });
     };
 
+    const handlePageContentChange = ({ contentJson, contentHtml }) => {
+        setForm((currentForm) => ({
+            ...currentForm,
+            pageContent: {
+                css: contentJson.css || "",
+                html: contentJson.html || "",
+            },
+            pageHtml: contentHtml || "",
+        }));
+    };
+
     const handleRestoreRevision = async (revisionId) => {
         try {
             const response = await axios.post(`/api/cms/posts/${id}/revisions/${revisionId}/restore`);
@@ -265,12 +346,20 @@ const CmsPostEditor = ({ type }) => {
     };
 
     const title = `${isEditing ? "Edit" : "New"} ${type}`;
+    const publicPath = form.status === "published" ? getCmsPublicPath(form.type, form.slug) : null;
 
     return (
-        <CmsAdminLayout>
+        <>
             <div className="d-flex align-items-center justify-content-between mb-3">
                 <h2 className="h4 mb-0">{title}</h2>
-                <Link to={getBackPath(type)} className="btn btn-outline-secondary">Back</Link>
+                <div className="d-flex gap-2">
+                    {publicPath && (
+                        <Link to={publicPath} className="btn btn-outline-secondary" target="_blank" rel="noreferrer">
+                            View
+                        </Link>
+                    )}
+                    <Link to={getBackPath(type)} className="btn btn-outline-secondary">Back</Link>
+                </div>
             </div>
             {error && <div className="alert alert-danger">{error}</div>}
             {isLoading ? (
@@ -303,14 +392,31 @@ const CmsPostEditor = ({ type }) => {
                             </select>
                         </div>
                         {form.type === "page" && (
-                            <div className="col-md-4">
-                                <label className="form-label" htmlFor="template">Template</label>
-                                <select id="template" name="template" className="form-select" value={form.template} onChange={handleChange}>
-                                    {pageTemplateOptions.map((option) => (
-                                        <option value={option.value} key={option.value}>{option.label}</option>
-                                    ))}
-                                </select>
-                            </div>
+                            <>
+                                <div className="col-md-4">
+                                    <label className="form-label" htmlFor="template">Template</label>
+                                    <select id="template" name="template" className="form-select" value={form.template} onChange={handleChange}>
+                                        {pageTemplateOptions.map((option) => (
+                                            <option value={option.value} key={option.value}>{option.label}</option>
+                                        ))}
+                                    </select>
+                                </div>
+                                <div className="col-md-4 d-flex align-items-end">
+                                    <div className="form-check form-switch">
+                                        <input
+                                            id="useVisualBuilder"
+                                            name="useVisualBuilder"
+                                            type="checkbox"
+                                            className="form-check-input"
+                                            checked={form.useVisualBuilder}
+                                            onChange={handleChange}
+                                        />
+                                        <label className="form-check-label" htmlFor="useVisualBuilder">
+                                            Use visual builder
+                                        </label>
+                                    </div>
+                                </div>
+                            </>
                         )}
                         <div className="col-md-4">
                             <label className="form-label" htmlFor="publishedAt">Published at</label>
@@ -320,68 +426,73 @@ const CmsPostEditor = ({ type }) => {
                             <label className="form-label" htmlFor="excerpt">Excerpt</label>
                             <textarea id="excerpt" name="excerpt" className="form-control" rows="2" value={form.excerpt} onChange={handleChange} />
                         </div>
-                        <div className="col-12">
-                            <div className="d-flex align-items-center justify-content-between mb-2">
-                                <label className="form-label mb-0" htmlFor="contentMarkdown">Content</label>
-                                <button
-                                    type="button"
-                                    className="btn btn-sm btn-outline-primary"
-                                    onClick={() => setIsMediaPickerOpen(!isMediaPickerOpen)}
-                                >
-                                    {isMediaPickerOpen ? "Close media" : "Insert media"}
-                                </button>
-                            </div>
-                            <textarea
-                                id="contentMarkdown"
-                                name="contentMarkdown"
-                                className="form-control font-monospace"
-                                rows="12"
-                                value={form.contentMarkdown}
-                                onChange={handleChange}
-                            />
-                        </div>
-                        {isMediaPickerOpen && (
+                        {form.type === "page" && form.useVisualBuilder && (
                             <div className="col-12">
-                                <MediaPicker onSelect={handleSelectMedia} />
+                                <label className="form-label">Page Builder</label>
+                                <GrapesPageEditor value={form.pageContent} onChange={handlePageContentChange} />
                             </div>
                         )}
-                        <div className="col-12">
-                            <h3 className="h5">Preview</h3>
-                            <div
-                                className="border rounded p-3 bg-light"
-                                dangerouslySetInnerHTML={{ __html: renderMarkdownToHtml(form.contentMarkdown) }}
-                            />
-                        </div>
-                        <div className="col-12">
-                            <section className="border rounded p-3">
-                                <h3 className="h5">Organization</h3>
-                                {termError && <div className="alert alert-warning">{termError}</div>}
-                                <div className="row g-3">
-                                    {Object.entries(taxonomyLabels).map(([taxonomy, label]) => (
-                                        <div className="col-md-6" key={taxonomy}>
-                                            <h4 className="h6">{label}</h4>
-                                            {availableTerms[taxonomy].length === 0 ? (
-                                                <p className="text-muted mb-0">No {label.toLowerCase()} yet.</p>
-                                            ) : (
-                                                <div className="d-flex flex-column gap-2">
-                                                    {availableTerms[taxonomy].map((term) => (
-                                                        <label className="form-check" key={term.id}>
-                                                            <input
-                                                                type="checkbox"
-                                                                className="form-check-input"
-                                                                checked={selectedTermIds.includes(Number(term.id))}
-                                                                onChange={() => handleTermToggle(term.id)}
-                                                            />
-                                                            <span className="form-check-label">{term.name}</span>
-                                                        </label>
-                                                    ))}
-                                                </div>
-                                            )}
-                                        </div>
-                                    ))}
+                        {(form.type !== "page" || !form.useVisualBuilder) && (
+                            <>
+                                <div className="col-12">
+                                    <div className="d-flex align-items-center justify-content-between mb-2">
+                                        <label className="form-label mb-0">Content</label>
+                                        <button
+                                            type="button"
+                                            className="btn btn-sm btn-outline-primary"
+                                            onClick={() => setIsMediaPickerOpen(!isMediaPickerOpen)}
+                                        >
+                                            {isMediaPickerOpen ? "Close media" : "Insert media"}
+                                        </button>
+                                    </div>
+                                    <RichTextEditor
+                                        ref={richTextEditorRef}
+                                        value={form.richTextHtml}
+                                        onChange={(nextHtml) => setForm((currentForm) => ({
+                                            ...currentForm,
+                                            richTextHtml: nextHtml,
+                                        }))}
+                                    />
                                 </div>
-                            </section>
-                        </div>
+                                {isMediaPickerOpen && (
+                                    <div className="col-12">
+                                        <MediaPicker onSelect={handleSelectMedia} />
+                                    </div>
+                                )}
+                            </>
+                        )}
+                        {hasTaxonomyAccess && (
+                            <div className="col-12">
+                                <section className="border rounded p-3">
+                                    <h3 className="h5">Organization</h3>
+                                    {termError && <div className="alert alert-warning">{termError}</div>}
+                                    <div className="row g-3">
+                                        {Object.entries(taxonomyLabels).map(([taxonomy, label]) => (
+                                            <div className="col-md-6" key={taxonomy}>
+                                                <h4 className="h6">{label}</h4>
+                                                {availableTerms[taxonomy].length === 0 ? (
+                                                    <p className="text-muted mb-0">No {label.toLowerCase()} yet.</p>
+                                                ) : (
+                                                    <div className="d-flex flex-column gap-2">
+                                                        {availableTerms[taxonomy].map((term) => (
+                                                            <label className="form-check" key={term.id}>
+                                                                <input
+                                                                    type="checkbox"
+                                                                    className="form-check-input"
+                                                                    checked={selectedTermIds.includes(Number(term.id))}
+                                                                    onChange={() => handleTermToggle(term.id)}
+                                                                />
+                                                                <span className="form-check-label">{term.name}</span>
+                                                            </label>
+                                                        ))}
+                                                    </div>
+                                                )}
+                                            </div>
+                                        ))}
+                                    </div>
+                                </section>
+                            </div>
+                        )}
                         <div className="col-12 d-flex gap-2">
                             <button type="button" className="btn btn-outline-secondary" onClick={handleDraft}>Save as draft</button>
                             <button type="button" className="btn btn-outline-success" onClick={handlePublish}>Publish</button>
@@ -434,7 +545,7 @@ const CmsPostEditor = ({ type }) => {
                     </div>
                 </form>
             )}
-        </CmsAdminLayout>
+        </>
     );
 };
 

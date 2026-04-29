@@ -26,7 +26,10 @@ describe("email config", () => {
         await expect(email.sendMail({ to: "user@example.com" }))
             .rejects.toMatchObject({
                 statusCode: 503,
-                responseBody: { message: "Email service is not configured." },
+                responseBody: {
+                    code: "EMAIL_NOT_CONFIGURED",
+                    message: "Email sending is not configured for this app yet.",
+                },
             });
         expect(nodemailer.createTransport).not.toHaveBeenCalled();
     });

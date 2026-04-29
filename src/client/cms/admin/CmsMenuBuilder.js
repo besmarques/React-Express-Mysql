@@ -1,7 +1,6 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
-import CmsAdminLayout from "./CmsAdminLayout";
-import { slugify } from "../editor/markdown";
+import { slugify } from "../../editor/markdown";
 import getApiErrorMessage from "../../utils/apiErrors";
 
 const emptyMenuForm = {
@@ -19,6 +18,33 @@ const emptyItemForm = {
     sortOrder: 0,
 };
 
+const targetTypeMeta = {
+    page: {
+        selectLabel: "Page",
+        placeholder: "Select a page",
+        empty: "No pages available.",
+        formatOptionLabel: (target) => `${target.label} (${target.slug})${target.status ? ` - ${target.status}` : ""}`,
+    },
+    post: {
+        selectLabel: "Post",
+        placeholder: "Select a post",
+        empty: "No posts available.",
+        formatOptionLabel: (target) => `${target.label} (${target.slug})${target.status ? ` - ${target.status}` : ""}`,
+    },
+    category: {
+        selectLabel: "Category",
+        placeholder: "Select a category",
+        empty: "No categories available.",
+        formatOptionLabel: (target) => `${target.label} (${target.slug})`,
+    },
+    tag: {
+        selectLabel: "Tag",
+        placeholder: "Select a tag",
+        empty: "No tags available.",
+        formatOptionLabel: (target) => `${target.label} (${target.slug})`,
+    },
+};
+
 const CmsMenuBuilder = () => {
     const [error, setError] = useState(null);
     const [isLoading, setIsLoading] = useState(true);
@@ -28,6 +54,8 @@ const CmsMenuBuilder = () => {
     const [menuForm, setMenuForm] = useState(emptyMenuForm);
     const [itemForm, setItemForm] = useState(emptyItemForm);
     const [editingItemId, setEditingItemId] = useState(null);
+    const [itemTargets, setItemTargets] = useState([]);
+    const [isTargetsLoading, setIsTargetsLoading] = useState(false);
 
     const loadMenus = async () => {
         try {
@@ -62,6 +90,29 @@ const CmsMenuBuilder = () => {
         loadMenus();
     }, []);
 
+    useEffect(() => {
+        const loadTargets = async () => {
+            if (itemForm.itemType === "custom") {
+                setItemTargets([]);
+                return;
+            }
+
+            try {
+                setIsTargetsLoading(true);
+                const response = await axios.get("/api/cms/menus/item-targets", {
+                    params: { itemType: itemForm.itemType },
+                });
+                setItemTargets(response.data);
+            } catch (err) {
+                setError(getApiErrorMessage(err, "Unable to load available menu targets."));
+            } finally {
+                setIsTargetsLoading(false);
+            }
+        };
+
+        loadTargets();
+    }, [itemForm.itemType]);
+
     const handleMenuFormChange = (event) => {
         const { name, value } = event.target;
         const updates = { [name]: value };
@@ -82,9 +133,31 @@ const CmsMenuBuilder = () => {
 
     const handleItemFormChange = (event) => {
         const { name, value } = event.target;
+        const nextValue = name === "sortOrder" ? Number(value) : value;
+
+        if (name === "itemType") {
+            setItemForm({
+                ...itemForm,
+                itemType: value,
+                targetId: "",
+                url: value === "custom" ? itemForm.url : "",
+            });
+            return;
+        }
+
+        if (name === "targetId") {
+            const selectedTarget = itemTargets.find((target) => String(target.id) === String(value));
+            setItemForm({
+                ...itemForm,
+                targetId: value,
+                label: itemForm.label || (selectedTarget ? selectedTarget.label : itemForm.label),
+            });
+            return;
+        }
+
         setItemForm({
             ...itemForm,
-            [name]: name === "sortOrder" ? Number(value) : value,
+            [name]: nextValue,
         });
     };
 
@@ -183,8 +256,10 @@ const CmsMenuBuilder = () => {
         }
     };
 
+    const targetMeta = targetTypeMeta[itemForm.itemType];
+
     return (
-        <CmsAdminLayout>
+        <>
             <div className="d-flex align-items-center justify-content-between mb-3">
                 <h2 className="h4 mb-0">Menus</h2>
                 <button type="button" className="btn btn-outline-secondary" onClick={resetMenuForm}>New menu</button>
@@ -256,14 +331,40 @@ const CmsMenuBuilder = () => {
                             </div>
                         ) : (
                             <div className="mb-3">
-                                <label className="form-label" htmlFor="targetId">Target id</label>
-                                <input id="targetId" name="targetId" className="form-control" value={itemForm.targetId} onChange={handleItemFormChange} />
+                                <label className="form-label" htmlFor="targetId">{targetMeta.selectLabel}</label>
+                                <select
+                                    id="targetId"
+                                    name="targetId"
+                                    className="form-select"
+                                    value={itemForm.targetId}
+                                    onChange={handleItemFormChange}
+                                    disabled={isTargetsLoading}
+                                >
+                                    <option value="">{isTargetsLoading ? "Loading..." : targetMeta.placeholder}</option>
+                                    {itemTargets.map((target) => (
+                                        <option key={target.id} value={target.id}>
+                                            {targetMeta.formatOptionLabel(target)}
+                                        </option>
+                                    ))}
+                                </select>
+                                {!isTargetsLoading && itemTargets.length === 0 && (
+                                    <div className="form-text">{targetMeta.empty}</div>
+                                )}
                             </div>
                         )}
                         <div className="row g-3">
                             <div className="col-md-6">
-                                <label className="form-label" htmlFor="parentId">Parent id</label>
-                                <input id="parentId" name="parentId" className="form-control" value={itemForm.parentId} onChange={handleItemFormChange} />
+                                <label className="form-label" htmlFor="parentId">Parent item</label>
+                                <select id="parentId" name="parentId" className="form-select" value={itemForm.parentId} onChange={handleItemFormChange}>
+                                    <option value="">No parent</option>
+                                    {(selectedMenu?.items || [])
+                                        .filter((item) => item.id !== editingItemId)
+                                        .map((item) => (
+                                            <option key={item.id} value={item.id}>
+                                                {item.label} ({item.itemType})
+                                            </option>
+                                        ))}
+                                </select>
                             </div>
                             <div className="col-md-6">
                                 <label className="form-label" htmlFor="sortOrder">Sort</label>
@@ -317,7 +418,7 @@ const CmsMenuBuilder = () => {
                     </section>
                 </div>
             </div>
-        </CmsAdminLayout>
+        </>
     );
 };
 

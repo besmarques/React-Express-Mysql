@@ -28,6 +28,11 @@ const createApp = require("../../app");
 const postService = require("./postService");
 
 const originalCmsEnabled = process.env.CMS_ENABLED;
+const validationErrorResponse = (errors) => ({
+    code: "VALIDATION_ERROR",
+    message: "Please correct the highlighted fields and try again.",
+    errors,
+});
 const createHttpError = (statusCode, responseBody) => {
     const error = new Error("Request failed");
     error.statusCode = statusCode;
@@ -113,13 +118,10 @@ describe("CMS admin post routes", () => {
             .send({ type: "page" });
 
         expect(res.statusCode).toEqual(400);
-        expect(res.body).toEqual({
-            message: "Validation failed",
-            errors: [
-                { field: "title", message: "Title is required" },
-                { field: "slug", message: "Slug is required" },
-            ],
-        });
+        expect(res.body).toEqual(validationErrorResponse([
+            { field: "title", message: "Title is required" },
+            { field: "slug", message: "Slug is required" },
+        ]));
         expect(postService.createPost).not.toHaveBeenCalled();
     });
 
@@ -138,14 +140,33 @@ describe("CMS admin post routes", () => {
             });
 
         expect(res.statusCode).toEqual(400);
-        expect(res.body).toEqual({
-            message: "Validation failed",
-            errors: [
-                { field: "contentJson.format", message: "Content format must be markdown" },
-                { field: "contentJson.markdown", message: "Markdown content must be a string" },
-            ],
-        });
+        expect(res.body).toEqual(validationErrorResponse([
+            { field: "contentJson.format", message: "Content format must be markdown, tinymce, tiptap, or grapesjs" },
+            { field: "contentJson.markdown", message: "Markdown content must be a string" },
+        ]));
         expect(postService.createPost).not.toHaveBeenCalled();
+    });
+
+    it("accepts grapesjs page payloads", async () => {
+        const payload = {
+            type: "page",
+            status: "draft",
+            title: "Home",
+            slug: "home",
+            contentJson: { format: "grapesjs", html: "<section>Home</section>", css: "body { color: red; }" },
+            contentHtml: "<style>body { color: red; }</style><section>Home</section>",
+        };
+        const createdPost = { id: 3, ...payload, authorId: 1 };
+        postService.createPost.mockResolvedValue(createdPost);
+
+        const res = await request(createTestApp())
+            .post("/api/cms/posts")
+            .set("Cookie", "token=valid-token")
+            .send(payload);
+
+        expect(res.statusCode).toEqual(201);
+        expect(res.body).toEqual(createdPost);
+        expect(postService.createPost).toHaveBeenCalledWith(payload, expect.objectContaining({ id: 1, isAdmin: true }));
     });
 
     it("creates posts for admins", async () => {
@@ -154,8 +175,8 @@ describe("CMS admin post routes", () => {
             status: "draft",
             title: "Home",
             slug: "home",
-            contentJson: { format: "markdown", markdown: "# Home" },
-            contentHtml: "<h1>Home</h1>",
+            contentJson: { format: "tinymce", html: "<p>Home</p>" },
+            contentHtml: "<p>Home</p>",
         };
         const createdPost = { id: 3, ...payload, authorId: 1 };
         postService.createPost.mockResolvedValue(createdPost);
@@ -266,6 +287,9 @@ describe("CMS public post routes", () => {
         const res = await request(createTestApp()).get("/api/cms/public/pages/draft-page");
 
         expect(res.statusCode).toEqual(404);
-        expect(res.body).toEqual({ message: "Published content not found." });
+        expect(res.body).toEqual({
+            code: "NOT_FOUND",
+            message: "Published content not found.",
+        });
     });
 });

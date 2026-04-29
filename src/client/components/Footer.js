@@ -3,7 +3,7 @@ import { Context } from "../store/appContext";
 
 function Footer() {
     const { store } = useContext(Context);
-    const appName = store.basename || "React Express MySQL";
+    const appName = store.appName || "React Express MySQL";
     const currentYear = new Date().getFullYear();
 
     return (

@@ -1,13 +1,7 @@
+const { createHttpError } = require("../../config/errorResponses");
 const menuRepository = require("./menuRepository");
 
 const allowedItemTypes = new Set(["custom", "page", "post", "category", "tag"]);
-
-const createHttpError = (statusCode, responseBody, message) => {
-    const error = new Error(message || responseBody.message || responseBody);
-    error.statusCode = statusCode;
-    error.responseBody = responseBody;
-    return error;
-};
 
 const normalizeMenuInput = (payload, fallback = {}) => ({
     name: payload.name !== undefined ? payload.name : fallback.name,
@@ -95,6 +89,15 @@ const buildMenuTree = (items) => {
 };
 
 const getMenus = async () => menuRepository.listMenus();
+const getMenuItemTargets = async (itemType) => {
+    assertAllowedItemType(itemType);
+
+    if (itemType === "custom") {
+        return [];
+    }
+
+    return menuRepository.listMenuItemTargets(itemType);
+};
 
 const getMenuById = async (id) => {
     const menu = await menuRepository.findMenuById(id);
@@ -206,6 +209,7 @@ module.exports = {
     deleteMenu,
     deleteMenuItem,
     getMenuById,
+    getMenuItemTargets,
     getMenuItems,
     getMenuWithItems,
     getMenus,

@@ -26,7 +26,7 @@ CMS support is disabled by default. Set `CMS_ENABLED=true` to register CMS API r
 6. If you plan to use uploads, set `CMS_MEDIA_DIR`, `CMS_MEDIA_PUBLIC_PATH`, `CMS_MEDIA_MAX_BYTES`, and `CMS_MEDIA_ALLOWED_TYPES`.
 7. If you plan to use forgot-password emails, configure SMTP values.
 8. Start the app and verify `GET /api/cms/health` returns `200` when CMS is enabled.
-9. Log in with an admin or a user that has CMS permissions.
+9. Log in with an admin or a user that has at least one CMS access permission.
 10. Validate the basic CMS flow in order: create page, publish page, open public page, upload media, assign terms, configure menu.
 
 Phase 1 adds the CMS module boundary and a health endpoint:
@@ -37,9 +37,10 @@ GET /api/cms/health
 
 When `CMS_ENABLED=false`, CMS routes are not mounted and `/api/cms/*` returns the standard API 404 response.
 
-The CMS posts/pages API is available when `CMS_ENABLED=true`:
+The CMS API is available when `CMS_ENABLED=true`:
 
 ```bash
+GET    /api/cms/health
 GET    /api/cms/posts
 GET    /api/cms/posts/:id
 POST   /api/cms/posts
@@ -56,6 +57,7 @@ POST   /api/cms/media
 PUT    /api/cms/media/:id
 DELETE /api/cms/media/:id
 GET    /api/cms/menus
+GET    /api/cms/menus/item-targets?itemType=page|post|category|tag|custom
 GET    /api/cms/menus/:id
 POST   /api/cms/menus
 PUT    /api/cms/menus/:id
@@ -76,9 +78,9 @@ GET    /api/cms/public/terms
 GET    /api/cms/public/terms/:taxonomy/:slug/posts
 ```
 
-Admin CMS routes require authentication and admin access. Public CMS routes only return published content.
+Most CMS admin routes require authentication plus a specific CMS permission. Public CMS routes only return published content.
 
-The CMS admin shell is available when `CMS_ENABLED=true` and the current user is an admin:
+CMS admin screens are available inside the shared logged-in admin layout when `CMS_ENABLED=true` and the current user has CMS access:
 
 ```bash
 /admin/cms
@@ -93,21 +95,23 @@ The CMS admin shell is available when `CMS_ENABLED=true` and the current user is
 /admin/cms/menus
 ```
 
-The first CMS content editor uses Markdown. Markdown source is stored in `content_json` with `format: "markdown"`, and preview/rendered HTML is submitted through `content_html`.
+`/admin/cms` is only a redirect entry point and sends users to `/admin/cms/pages`. There is no separate CMS dashboard screen.
+
+Posts and non-builder pages now use the shared TinyMCE editor in `src/client/editor/RichTextEditor.js`. Their content is stored in `content_json` with `format: "tinymce"` and persisted HTML is submitted through `content_html`. Pages can also opt into the shared GrapesJS page builder in `src/client/editor/GrapesPageEditor.js`, which stores `format: "grapesjs"` with project HTML/CSS in `content_json`.
 
 CMS updates create revisions before changes are saved. The CMS editor includes a revision panel for existing pages/posts and supports restoring earlier revisions.
 
 CMS categories and tags use the optional `cms_terms` and `cms_post_terms` tables. Admins can manage terms from `/admin/cms/terms`, assign them in the content editor, and expose public filtered post archives.
 
-CMS media uses local file storage controlled by `CMS_MEDIA_DIR` and `CMS_MEDIA_PUBLIC_PATH`. Admins can upload, edit metadata, delete files, and insert uploaded media into Markdown content from the editor.
+CMS media uses local file storage controlled by `CMS_MEDIA_DIR` and `CMS_MEDIA_PUBLIC_PATH`. Admins can upload, edit metadata, delete files, and insert uploaded media into the shared media picker and shared rich text editor.
 
 CMS menus use `cms_menus` and `cms_menu_items`. Admins can create menus, assign a location such as `primary`, add custom/page/post/category/tag links, and public CMS templates render the `primary` menu when configured.
 
 CMS themes are selected with `CMS_THEME`. The default theme lives in `src/client/cms/themes/default/` and provides page, post, archive, and landing page templates. Page templates can be selected from the CMS editor.
 
-CMS permissions use `cms_roles`, `cms_permissions`, `cms_user_roles`, and `cms_role_permissions`. CMS and `/api/users` access are permission-based, while `is_admin` still acts as a bootstrap shortcut with full access.
+CMS permissions use `cms_roles`, `cms_permissions`, `cms_user_roles`, and `cms_role_permissions`. CMS and `/api/users` access are permission-based, while `is_admin` still acts as a bootstrap shortcut with full access. The current permission set includes `cms.posts.*`, `cms.media.manage`, `cms.menus.manage`, `cms.taxonomies.manage`, `cms.settings.manage`, and `users.manage`.
 
-CMS now registers through shared module registries under `src/server/modules/` and `src/client/modules/`. The current contract is intentionally small so future app modules can follow the same pattern without a full plugin runtime:
+CMS now registers through shared module registries under `src/server/modules/` and `src/client/modules/`. Core app routes also register through the same client module manifest so route ownership is not hardcoded in `layout.js`. The current contract is intentionally small so future app modules can follow the same pattern without a full plugin runtime:
 
 ```text
 name
@@ -115,6 +119,8 @@ enabled(configOrStore)
 registerServer(app)   // server only
 clientRoutes          // client only
 navigationItems       // client only
+sidebarItems          // client only
+order                 // client route ordering
 ```
 
 CMS public rendering is available when `CMS_ENABLED=true`:
@@ -154,14 +160,17 @@ This project utilizes several packages to enhance development and production wor
 - [@emotion/react](https://emotion.sh/docs/@emotion/react) `^11.14.0`: CSS-in-JS support used by MUI.
 - [@emotion/styled](https://emotion.sh/docs/styled) `^11.14.1`: Styled component support used by MUI.
 - [@mui/material](https://mui.com/) `^9.0.0`: React UI framework implementing Material Design.
+- [@tinymce/tinymce-react](https://www.tiny.cloud/docs/tinymce/latest/react-ref/) `^6.3.0`: React wrapper for the self-hosted TinyMCE rich text editor.
 - [axios](https://www.npmjs.com/package/axios) `^1.15.2`: Promise-based HTTP client for browser and Node.js.
 - [babel-loader](https://webpack.js.org/loaders/babel-loader/) `^10.1.1`: Webpack loader for Babel.
 - [bcrypt](https://www.npmjs.com/package/bcrypt) `^6.0.0`: Password hashing library.
 - [cookie-parser](https://www.npmjs.com/package/cookie-parser) `^1.4.7`: Express middleware for parsing cookies.
+- [css-loader](https://webpack.js.org/loaders/css-loader/) `^7.1.4`: Webpack loader for bundling editor and app CSS imports.
 - [dotenv](https://www.npmjs.com/package/dotenv) `^17.4.2`: Loads environment variables from `.env`.
 - [express](https://expressjs.com/) `^5.2.1`: Web framework for Node.js.
 - [express-mysql-session](https://www.npmjs.com/package/express-mysql-session) `^3.0.3`: MySQL-backed session store for Express.
 - [express-session](https://www.npmjs.com/package/express-session) `^1.19.0`: Session middleware for Express.
+- [grapesjs](https://grapesjs.com/) `^0.22.15`: Self-hosted visual page builder used for optional CMS page layouts.
 - [jsonwebtoken](https://www.npmjs.com/package/jsonwebtoken) `^9.0.3`: JSON Web Token implementation.
 - [mysql2](https://www.npmjs.com/package/mysql2) `^3.22.2`: MySQL client for Node.js.
 - [newrelic](https://www.npmjs.com/package/newrelic) `^13.19.2`: New Relic Node.js agent.
@@ -169,6 +178,8 @@ This project utilizes several packages to enhance development and production wor
 - [react](https://reactjs.org/) `^19.2.5`: JavaScript library for building user interfaces.
 - [react-dom](https://reactjs.org/docs/react-dom.html) `^19.2.5`: React DOM renderer.
 - [react-router-dom](https://reactrouter.com/) `^7.14.2`: DOM bindings for React Router.
+- [style-loader](https://webpack.js.org/loaders/style-loader/) `^4.0.0`: Injects bundled CSS into the client build.
+- [tinymce](https://www.tiny.cloud/docs/tinymce/latest/) `^8.4.0`: Self-hosted rich text editor used by the shared app editor component.
 - [winston](https://www.npmjs.com/package/winston) `^3.19.0`: Logging library.
 - [winston-daily-rotate-file](https://www.npmjs.com/package/winston-daily-rotate-file) `^5.0.0`: File rotation transport for Winston.
 
@@ -200,6 +211,27 @@ npm run dev
 
 Creates a development build with Webpack and runs the server through Nodemon.
 
+## API Error Responses
+
+API errors use one JSON envelope:
+
+```json
+{
+  "code": "SOME_ERROR_CODE",
+  "message": "Human-readable message",
+  "errors": [
+    { "field": "email", "message": "Email must be valid" }
+  ]
+}
+```
+
+Notes:
+
+- `code` is stable and intended for client logic and logs.
+- `message` is the default user-facing string.
+- `errors` is only present for validation-style failures.
+- Auth failures such as missing, invalid, or expired tokens also use this envelope.
+
 ## Generated Output Policy
 
 The `dist/` directory is generated by Webpack when you run `npm run build`. It contains the deployable server bundle, client assets, copied public files, lazy-loaded chunks, and the generated production `package.json`.
@@ -214,9 +246,11 @@ Optional seed examples live in `db/seed/`. Review and replace placeholder values
 
 Optional CMS schema files live in `db/schema/cms/`. These files are only required when `CMS_ENABLED=true` and should be run after the base `user` and `sessions` schema files.
 
+These SQL files are create-from-scratch schema files, not migrations.
+
 ## Environment
 
-Startup requires `APP_PUBLIC_URL`, `JWT_SECRET`, `SESSION_SECRET`, `DB_HOST`, `DB_PORT`, `DB_USER`, and `DB_NAME`. `DB_PASSWORD` and email settings are optional at startup; missing optional values are logged as warnings and related features may be unavailable until configured. `CMS_ENABLED` controls whether optional CMS routes are registered. `CMS_THEME` controls the active CMS theme and defaults to `default`. CMS media can be configured with `CMS_MEDIA_DIR`, `CMS_MEDIA_PUBLIC_PATH`, `CMS_MEDIA_MAX_BYTES`, `CMS_MEDIA_ALLOWED_TYPES`, and `JSON_BODY_LIMIT`.
+Startup requires `APP_PUBLIC_URL`, `JWT_SECRET`, `SESSION_SECRET`, `DB_HOST`, `DB_PORT`, `DB_USER`, and `DB_NAME`. `DB_PASSWORD` and email settings are optional at startup; missing optional values are logged as warnings and related features may be unavailable until configured. `CMS_ENABLED` controls whether optional CMS routes are registered. `CMS_THEME` controls the active CMS theme and defaults to `default`. `REACT_APP_NAME` controls the visible app name, while `REACT_APP_BASENAME` is reserved for router deployment paths. CMS media can be configured with `CMS_MEDIA_DIR`, `CMS_MEDIA_PUBLIC_PATH`, `CMS_MEDIA_MAX_BYTES`, `CMS_MEDIA_ALLOWED_TYPES`, and `JSON_BODY_LIMIT`.
 
 ## License
 
@@ -260,27 +294,28 @@ React-Express-Mysql/
 |       `-- .gitkeep
 |-- src/
 |   |-- client/
+|   |   |-- components/
+|   |   |   |-- AppNavbar.js
+|   |   |   |-- Button.js
+|   |   |   |-- Footer.js
+|   |   |   |-- PublicPreviewBar.js
+|   |   |   |-- PublicNavbar.js
+|   |   |   `-- Sidebar.js
 |   |   |-- cms/
 |   |   |   |-- admin/
-|   |   |   |   |-- CmsAdminLayout.js
-|   |   |   |   |-- CmsDashboard.js
 |   |   |   |   |-- CmsMediaLibrary.js
 |   |   |   |   |-- CmsMenuBuilder.js
 |   |   |   |   |-- CmsPostEditor.js
 |   |   |   |   |-- CmsPostList.js
 |   |   |   |   `-- CmsTermManager.js
-|   |   |   |-- editor/
-|   |   |   |   `-- markdown.js
-|   |   |   |-- media/
-|   |   |   |   |-- MediaPicker.js
-|   |   |   |   `-- mediaFiles.js
+|   |   |   |-- contentPaths.js
 |   |   |   |-- public/
-|   |   |       |-- CmsContentView.js
-|   |   |       |-- CmsMenu.js
-|   |   |       |-- CmsNotFound.js
-|   |   |       |-- CmsPage.js
-|   |   |       |-- CmsPost.js
-|   |   |       `-- CmsTermArchive.js
+|   |   |   |   |-- CmsContentView.js
+|   |   |   |   |-- CmsMenu.js
+|   |   |   |   |-- CmsNotFound.js
+|   |   |   |   |-- CmsPage.js
+|   |   |   |   |-- CmsPost.js
+|   |   |   |   `-- CmsTermArchive.js
 |   |   |   `-- themes/
 |   |   |       |-- default/
 |   |   |       |   |-- ArchiveTemplate.js
@@ -289,15 +324,21 @@ React-Express-Mysql/
 |   |   |       |   |-- PostTemplate.js
 |   |   |       |   `-- index.js
 |   |   |       `-- themeRegistry.js
-|   |   |-- components/
-|   |   |   |-- Button.js
-|   |   |   |-- Footer.js
-|   |   |   |-- Navbar.js
-|   |   |   `-- Sidebar.js
+|   |   |-- editor/
+|   |   |   |-- GrapesPageEditor.js
+|   |   |   |-- markdown.js
+|   |   |   `-- RichTextEditor.js
 |   |   |-- layouts/
 |   |   |   |-- ContentOnly.js
 |   |   |   |-- FullLayout.js
 |   |   |   `-- NoSidebarLayout.js
+|   |   |-- media/
+|   |   |   |-- MediaPicker.js
+|   |   |   `-- mediaFiles.js
+|   |   |-- modules/
+|   |   |   |-- cmsModule.js
+|   |   |   |-- coreModule.js
+|   |   |   `-- moduleRegistry.js
 |   |   |-- pages/
 |   |   |   |-- Admin.js
 |   |   |   |-- Login.js
@@ -310,13 +351,10 @@ React-Express-Mysql/
 |   |   |   |   `-- envState.js
 |   |   |   |-- appContext.js
 |   |   |   `-- combinedState.js
-|   |   |-- modules/
-|   |   |   |-- cmsModule.js
-|   |   |   `-- moduleRegistry.js
 |   |   |-- theme/
 |   |   |   `-- original.js
 |   |   |-- wrappers/
-|   |   |   |-- CmsEnabledWrapper.js
+|   |   |   |-- FeatureEnabledWrapper.js
 |   |   |   |-- LoginWrapper.js
 |   |   |   |-- PrivateWrapper.js
 |   |   |   `-- SettingsWrapper.js
@@ -327,7 +365,6 @@ React-Express-Mysql/
 |   `-- server/
 |       |-- cms/
 |       |   |-- cmsConfig.js
-|       |   |-- cmsModule.js
 |       |   |-- cmsModule.test.js
 |       |   |-- cmsRoutes.js
 |       |   |-- permissions/
@@ -373,6 +410,7 @@ React-Express-Mysql/
 |       |   |-- dbpool.js
 |       |   |-- email.js
 |       |   |-- email.test.js
+|       |   |-- errorResponses.js
 |       |   |-- logger.js
 |       |   |-- sessionConfig.js
 |       |   |-- validateEnv.js

@@ -53,7 +53,10 @@ describe('autoRenewToken', () => {
             .set('Cookie', 'token=invalid-token');
 
         expect(res.statusCode).toEqual(401);
-        expect(res.body).toEqual({ message: 'Unauthorized: Invalid token' });
+        expect(res.body).toEqual({
+            code: 'AUTH_TOKEN_INVALID',
+            message: 'Your session is invalid or has expired. Please log in again.',
+        });
     });
 
     it('renews an expiring valid token cookie on protected API routes', async () => {

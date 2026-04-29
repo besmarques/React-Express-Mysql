@@ -55,8 +55,8 @@ describe("postService admin content", () => {
             status: "draft",
             title: "Home",
             slug: "home",
-            contentJson: { format: "markdown", markdown: "# Home" },
-            contentHtml: "<h1>Home</h1>",
+            contentJson: { format: "grapesjs", html: "<section>Home</section>", css: "body { color: red; }" },
+            contentHtml: "<style>body { color: red; }</style><section>Home</section>",
         };
         const createdPost = { id: 1, ...payload, authorId: 7 };
         postRepository.createPost.mockResolvedValue(createdPost);
@@ -66,8 +66,8 @@ describe("postService admin content", () => {
         expect(postRepository.createPost).toHaveBeenCalledWith({
             ...payload,
             authorId: 7,
-            contentHtml: "<h1>Home</h1>",
-            contentJson: { format: "markdown", markdown: "# Home" },
+            contentHtml: "<style>body { color: red; }</style><section>Home</section>",
+            contentJson: { format: "grapesjs", html: "<section>Home</section>", css: "body { color: red; }" },
             excerpt: undefined,
             menuOrder: 0,
             parentId: undefined,
@@ -129,7 +129,7 @@ describe("postService admin content", () => {
 
     it("requires publish permission when creating published content", async () => {
         await expect(postService.createPost(
-            { type: "page", status: "published", title: "Home", slug: "home" },
+            { type: "page", status: "published", title: "Home", slug: "home", contentJson: { format: "grapesjs", html: "", css: "" }, contentHtml: "" },
             { id: 7, isAdmin: false, permissions: ["cms.posts.create"] }
         ))
             .rejects
@@ -189,8 +189,8 @@ describe("postService revisions", () => {
             slug: "restored",
             template: "landing",
             excerpt: "Restored excerpt",
-            contentJson: { format: "markdown", markdown: "# Restored" },
-            contentHtml: "<h1>Restored</h1>",
+            contentJson: { format: "tinymce", html: "<p>Restored</p>" },
+            contentHtml: "<p>Restored</p>",
         };
         const restoredPost = { ...currentPost, ...revision, id: 1 };
         postRepository.findById.mockResolvedValue(currentPost);
@@ -206,8 +206,8 @@ describe("postService revisions", () => {
             slug: "restored",
             status: "draft",
             template: "landing",
-            contentJson: { format: "markdown", markdown: "# Restored" },
-            contentHtml: "<h1>Restored</h1>",
+            contentJson: { format: "tinymce", html: "<p>Restored</p>" },
+            contentHtml: "<p>Restored</p>",
         }));
     });
 

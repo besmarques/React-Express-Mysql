@@ -15,22 +15,37 @@ This plan describes how to evolve the boilerplate into an optional WordPress-lik
 ```text
 src/server/cms/
   cmsRoutes.js
-  cmsModule.js
   posts/
   media/
   taxonomies/
   menus/
-  settings/
-  themes/
+  permissions/
+
+src/server/modules/
+  cmsModule.js
+  moduleRegistry.js
 
 src/client/cms/
   admin/
-  components/
-  editor/
   public/
   themes/
 
+src/client/editor/
+  RichTextEditor.js
+  GrapesPageEditor.js
+  markdown.js
+
+src/client/media/
+  MediaPicker.js
+  mediaFiles.js
+
+src/client/modules/
+  cmsModule.js
+  coreModule.js
+  moduleRegistry.js
+
 db/schema/cms/
+  README.md
   cms_posts.sql
   cms_revisions.sql
   cms_terms.sql
@@ -38,6 +53,7 @@ db/schema/cms/
   cms_media.sql
   cms_options.sql
   cms_menus.sql
+  cms_permissions.sql
 ```
 
 ## Phase 1: CMS Feature Flag
@@ -46,7 +62,7 @@ Status: implemented. The CMS module is controlled by `CMS_ENABLED` and exposes `
 
 1. Add `CMS_ENABLED=false` to `env.example`.
 2. Add a config helper that parses CMS feature flags.
-3. Add `src/server/cms/cmsModule.js`.
+3. Add a server module definition under `src/server/modules/cmsModule.js`.
 4. Register CMS server routes only when `CMS_ENABLED=true`.
 5. Add a lightweight `/api/cms/health` endpoint.
 6. Add tests proving CMS routes are unavailable when disabled and available when enabled.
@@ -66,7 +82,8 @@ Status: implemented. The optional CMS schema lives under `db/schema/cms/` and ca
 6. Add `cms_media.sql`.
 7. Add `cms_options.sql`.
 8. Add `cms_menus.sql`.
-9. Document that CMS schema is optional and only needed for CMS projects.
+9. Add `cms_permissions.sql`.
+10. Document that CMS schema is optional and only needed for CMS projects.
 
 Recommended first `cms_posts` fields:
 
@@ -115,7 +132,7 @@ GET /api/cms/public/pages/:slug
 GET /api/cms/public/posts/:slug
 ```
 
-8. Protect admin endpoints with authentication and admin authorization.
+8. Protect admin endpoints with authentication and permission authorization.
 9. Keep public endpoints limited to published content.
 10. Add tests for draft visibility, published visibility, validation, and authorization.
 
@@ -123,9 +140,9 @@ Expected result: CMS can create, update, list, and publish posts/pages through A
 
 ## Phase 4: Admin CMS Shell
 
-Status: implemented. CMS admin routes are available under `/admin/cms` when `CMS_ENABLED=true` and the user is an authenticated admin.
+Status: implemented. CMS admin routes are available under `/admin/cms` when `CMS_ENABLED=true` and the user is authenticated with CMS access.
 
-1. Add `src/client/cms/admin/CmsAdminLayout.js`.
+1. Reuse the shared post-login admin layout for CMS screens instead of introducing a nested CMS-only shell.
 2. Add admin routes under `/admin/cms`.
 3. Add pages:
 
@@ -145,34 +162,35 @@ Status: implemented. CMS admin routes are available under `/admin/cms` when `CMS
 7. Add publish/draft controls.
 8. Add delete/trash controls.
 
-Expected result: authenticated admins can manage posts and pages from a dedicated CMS admin area.
+Expected result: authenticated CMS users can manage posts and pages from the same shared admin area as the rest of the platform.
 
 ## Phase 5: Content Editor
 
-Status: implemented with Markdown as the first editor format. The CMS editor stores canonical Markdown in `content_json`, generates preview HTML, and submits rendered `content_html`.
+Status: implemented with shared TinyMCE for posts and non-builder pages, plus optional GrapesJS for page layouts. The CMS editor stores canonical editor data in `content_json` and submitted HTML in `content_html`.
 
 1. Choose the first editor format:
 
 ```text
-Option A: Markdown
-Option B: TipTap rich text
-Option C: JSON block editor
+Option A: Shared rich text editor
+Option B: Visual page builder for pages
+Option C: Both, with per-page opt-in
 ```
 
-2. Start with Markdown if speed and simplicity matter most.
-3. Start with TipTap if a WordPress-like editing experience matters most.
+2. Use the shared rich text editor for posts and standard pages.
+3. Allow pages to opt into a visual builder without forcing the whole CMS into that mode.
 4. Store canonical content in `content_json`.
-5. Store rendered HTML in `content_html` if public rendering needs speed.
+5. Store rendered HTML in `content_html` for public rendering speed.
 6. Add title, slug, excerpt, status, and publish date fields.
 7. Add slug generation from title.
 8. Add client-side validation.
 9. Add server-side validation.
+10. Keep media insertion wired into the shared editor path.
 
 Expected result: editors can write and save real page/post content.
 
 ## Phase 6: Public CMS Rendering
 
-Status: implemented. Public CMS pages render at `/:slug`, public CMS posts render at `/posts/:slug`, and CMS public routes sit after explicit app/admin routes.
+Status: implemented. Public CMS pages render at `/:slug`, public CMS posts render at `/posts/:slug`, taxonomy archives render at `/category/:slug` and `/tag/:slug`, and CMS public routes sit after explicit app/admin routes.
 
 1. Add `src/client/cms/public/CmsPage.js`.
 2. Add `src/client/cms/public/CmsPost.js`.
@@ -221,7 +239,7 @@ Expected result: posts can be organized like WordPress content.
 
 ## Phase 9: Media Library
 
-Status: implemented. CMS media supports JSON/base64 uploads, configurable local storage, metadata records, mime/size validation, admin list/update/delete, and editor insertion into Markdown content.
+Status: implemented. CMS media supports JSON/base64 uploads, configurable local storage, metadata records, mime/size validation, admin list/update/delete, and editor insertion into the shared rich text editor.
 
 1. Add upload endpoint.
 2. Store files under a configurable media directory.
@@ -291,6 +309,7 @@ cms.posts.publish
 cms.posts.delete
 cms.media.manage
 cms.menus.manage
+cms.taxonomies.manage
 cms.settings.manage
 users.manage
 ```
@@ -320,6 +339,8 @@ enabled(config)
 registerServer(app)
 clientRoutes
 navigationItems
+sidebarItems
+route order
 ```
 
 4. Move CMS registration into this system.
@@ -329,7 +350,7 @@ Expected result: CMS becomes one optional module among possible future modules.
 
 ## Phase 14: Documentation And Diagrams
 
-Status: implemented. The architecture docs now include CMS module diagrams, a CMS database diagram, publish and editor-save sequence flows, README setup notes, and a CMS enablement checklist.
+Status: implemented. The architecture docs now include CMS module diagrams, a CMS database diagram, publish and editor-save sequence flows, README setup notes, a CMS enablement checklist, and schema notes.
 
 1. Update `docs/architecture.md` with CMS module diagrams.
 2. Add CMS database diagram.

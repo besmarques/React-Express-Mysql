@@ -1,14 +1,11 @@
+const { sendValidationError } = require("../../config/errorResponses");
+
 const allowedTypes = new Set(["post", "page"]);
 const allowedStatuses = new Set(["draft", "published", "private", "trash"]);
-const allowedContentFormats = new Set(["markdown"]);
+const allowedContentFormats = new Set(["markdown", "grapesjs", "tiptap", "tinymce"]);
 
 const isPresent = (value) => value !== undefined && value !== null && String(value).trim().length > 0;
 const isIntegerLike = (value) => Number.isInteger(Number(value));
-
-const sendValidationError = (res, errors) => res.status(400).json({
-    message: "Validation failed",
-    errors,
-});
 
 const validatePostPayload = ({ requireTitleAndSlug }) => (req, res, next) => {
     const errors = [];
@@ -70,10 +67,22 @@ const validatePostPayload = ({ requireTitleAndSlug }) => (req, res, next) => {
             errors.push({ field: "contentJson", message: "Content JSON must be an object" });
         } else {
             if (!allowedContentFormats.has(contentJson.format)) {
-                errors.push({ field: "contentJson.format", message: "Content format must be markdown" });
+                errors.push({ field: "contentJson.format", message: "Content format must be markdown, tinymce, tiptap, or grapesjs" });
             }
 
-            if (typeof contentJson.markdown !== "string") {
+            if (contentJson.format === "grapesjs") {
+                if (typeof contentJson.html !== "string") {
+                    errors.push({ field: "contentJson.html", message: "GrapesJS HTML must be a string" });
+                }
+
+                if (typeof contentJson.css !== "string") {
+                    errors.push({ field: "contentJson.css", message: "GrapesJS CSS must be a string" });
+                }
+            } else if (contentJson.format === "tiptap" || contentJson.format === "tinymce") {
+                if (typeof contentJson.html !== "string") {
+                    errors.push({ field: "contentJson.html", message: "Rich text HTML must be a string" });
+                }
+            } else if (typeof contentJson.markdown !== "string") {
                 errors.push({ field: "contentJson.markdown", message: "Markdown content must be a string" });
             }
         }
